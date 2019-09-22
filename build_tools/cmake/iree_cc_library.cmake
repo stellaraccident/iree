@@ -14,6 +14,19 @@
 
 include(CMakeParseArguments)
 
+# DO NOT SUBMIT
+define_property(
+  TARGET
+  PROPERTY
+    IREE_CC_LIBRARY_ALWAYSLINK
+  BRIEF_DOCS
+    "List of all libraries (and their aliases) with alwayslink=1."
+  FULL_DOCS
+    "Each iree_cc_library with ALWAYSLINK set will be added to this list along"
+    "with any aliases that target it. This list can be used as a lookup whether"
+    "the library needs to be linked into binaries."
+)
+
 # iree_cc_library()
 #
 # CMake function to imitate Bazel's cc_library rule.
@@ -131,6 +144,50 @@ function(iree_cc_library)
       # INTERFACE libraries can't have the CXX_STANDARD property set.
       set_property(TARGET ${_NAME} PROPERTY CXX_STANDARD ${IREE_CXX_STANDARD})
       set_property(TARGET ${_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
+
+      # Setup the transitive link dependencies for alwayslink libraries.
+      # set(_LINK_DEPS)
+      # if(${_RULE_ALWAYSLINK})
+      #   list(APPEND _LINK_DEPS ${_NAME})
+      # endif()
+      # foreach(_TARGET IN LISTS _RULE_DEPS)
+      #   get_target_property(_ALIASED_TARGET ${_TARGET} ALIASED_TARGET)
+      #   if(_ALIASED_TARGET)
+      #     set(_TARGET_NAME ${_ALIASED_TARGET})
+      #   else()
+      #     string(REPLACE "::" "_" _TARGET_NAME ${_TARGET})
+      #   endif()
+      #   get_target_property(_TARGET_TYPE ${_TARGET_NAME} TYPE)
+      #   message(${_TARGET_TYPE})
+      #   if(NOT "${_TARGET_TYPE}" STREQUAL "INTERFACE_LIBRARY")
+      #     #get_target_property(_TARGET_DEPS ${_TARGET_NAME} IREE_CC_LIBRARY_TRANSITIVE_LINK_DEPS)
+      #     #if(NOT "${_TARGET_DEPS}" STREQUAL "_TARGET_DEPS-NOTFOUND")
+      #       list(APPEND _LINK_DEPS "$<TARGET_PROPERTY:${_TARGET_NAME},IREE_CC_LIBRARY_TRANSITIVE_LINK_DEPS>")
+      #       #list(APPEND _LINK_DEPS ${_TARGET_DEPS})
+      #     #endif()
+      #   endif()
+      # endforeach()
+      # set_property(
+      #   TARGET ${_NAME}
+      #   PROPERTY IREE_CC_LIBRARY_TRANSITIVE_LINK_DEPS
+      #   ${_LINK_DEPS}
+      # )
+      # message("link deps for ${_NAME} = ${_LINK_DEPS}")
+      if(${_RULE_ALWAYSLINK})
+        message("SET ALWAYSLINK ON ${_NAME}")
+        set_target_properties(
+          ${_NAME}
+          PROPERTIES
+          IREE_CC_LIBRARY_ALWAYSLINK ON
+        )
+      else()
+        message("SET ALWAYSLINK OFF ${_NAME}")
+        set_target_properties(
+          ${_NAME}
+          PROPERTIES
+          IREE_CC_LIBRARY_ALWAYSLINK OFF
+        )
+      endif()
     else()
       # Generating header-only library.
       add_library(${_NAME} INTERFACE)
@@ -160,11 +217,18 @@ function(iree_cc_library)
     # disambiguate the underscores in paths vs. the separators.
     iree_package_ns(_PACKAGE_NS)
     add_library(${_PACKAGE_NS}::${_RULE_NAME} ALIAS ${_NAME})
+    if(${_RULE_ALWAYSLINK})
+      set_property(GLOBAL APPEND PROPERTY IREE_CC_LIBRARY_ALWAYSLINK_LIST "${_NAME}")
+      set_property(GLOBAL APPEND PROPERTY IREE_CC_LIBRARY_ALWAYSLINK_LIST "${_PACKAGE_NS}::${_RULE_NAME}")
+    endif()
     iree_package_dir(_PACKAGE_DIR)
     if(${_RULE_NAME} STREQUAL ${_PACKAGE_DIR})
       # If the library name matches the package then treat it as a default.
       # For example, foo/bar/ library 'bar' would end up as 'foo::bar'.
       add_library(${_PACKAGE_NS} ALIAS ${_NAME})
+      if(${_RULE_ALWAYSLINK})
+        set_property(GLOBAL APPEND PROPERTY IREE_CC_LIBRARY_ALWAYSLINK_LIST "${_PACKAGE_NS}")
+      endif()
     endif()
   endif()
 endfunction()
