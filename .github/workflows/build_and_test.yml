@@ -18,6 +18,8 @@ jobs:
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends clang-format-9
         wget https://raw.githubusercontent.com/llvm-mirror/clang/master/tools/clang-format/git-clang-format
         chmod +x git-clang-format
+        echo $PWD
+        ls .
 
     - name: Checking out latest version and all submodules
       uses: actions/checkout@v1
@@ -28,6 +30,9 @@ jobs:
     - name: Running clang-format on changed source files
       # TODO(benvanik): actually filter to changed files.
       run: |
+        echo $PWD
+        ls ${GITHUB_WORKSPACE}
+        ls .
         ./git-clang-format origin/master --binary=clang-format-9
         git diff --exit-code
 
