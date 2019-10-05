@@ -63,14 +63,7 @@ jobs:
     runs-on: ${{ matrix.host_os }}
     strategy:
       matrix:
-        build_config:
-          - ubuntu-host-bazel-clang
-          - ubuntu-host-cmake-clang
-          - ubuntu-host-cmake-gcc
-          - ubuntu-emscripten-cmake-emscripten
-          - macos-host-cmake-clang
-          - windows-host-bazel-msvc
-          - windows-host-cmake-msvc
+        build_config: [ubuntu-host-bazel-clang, ubuntu-host-cmake-clang, ubuntu-host-cmake-gcc, ubuntu-emscripten-cmake-emscripten, macos-host-cmake-clang, windows-host-bazel-msvc, windows-host-cmake-msvc]
         include:
 #           - build_config: ubuntu-host-bazel-clang
 #             host_os: ubuntu-latest
