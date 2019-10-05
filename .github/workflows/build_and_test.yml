@@ -55,11 +55,11 @@ jobs:
             target_os: host
             build_system: cmake
             compiler: clang
-          - build_config: ubuntu-host-cmake-gcc
-            host_os: ubuntu-latest
-            target_os: host
-            build_system: cmake
-            compiler: gcc
+#           - build_config: ubuntu-host-cmake-gcc
+#             host_os: ubuntu-latest
+#             target_os: host
+#             build_system: cmake
+#             compiler: gcc
           - build_config: ubuntu-emscripten-cmake-emscripten
             host_os: ubuntu-latest
             target_os: emscripten
