@@ -31,15 +31,10 @@ jobs:
 
   # Build Linux targets (and targets we can cross compile from Linux).
   build_smoketest:
-    name: Smoke Test
+    name: Smoke Test 
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
-      matrix:
-        host_os: [linux]
-        target_os: [host]
-        build_system: [cmake]
-        compiler: [clang]
     steps:
     - name: Installing ninja
       run: sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends ninja-build
@@ -48,25 +43,18 @@ jobs:
       run: |
         git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE --no-checkout --no-tags
         git checkout $GITHUB_SHA
-        git submodule update --init --depth 200 --jobs 8 \
+        git \
             -c submodule."third-party/llvm-project".update=none \
             -c submodule."third-party/tensorflow".update=none \
+            submodule update --init --depth 200 --jobs 8
     - name: Building and testing with CMake
-      if: matrix.build_system == 'cmake'
       env:
-        CXX: ${{ matrix.compiler }}
+        CXX: clang
       # TODO(benvanik): only do ctest on runtime portions
       run: |
         mkdir build/ && cd build/
         cmake ..
         cmake --build . -- -j4
-    - name: Building and testing with Bazel
-      if: matrix.build_system == 'bazel'
-      env:
-        CXX: ${{ matrix.compiler }}
-      run: |
-        bazel test //iree/...
-    # TODO(benvanik): coverage: build with -copt --coverage and `bash <(curl -s https://codecov.io/bash)`
 
   # Build emscripten targets using the emscripten SDK.
 #   build_on_emsdk:
