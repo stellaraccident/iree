@@ -39,7 +39,7 @@ jobs:
         build_config:
           #- ubuntu-host-bazel-clang
           - ubuntu-host-cmake-clang
-          - ubuntu-host-cmake-gcc
+          #- ubuntu-host-cmake-gcc
           - ubuntu-emscripten-cmake-emscripten
           - macos-host-cmake-clang
           #- windows-host-bazel-msvc
