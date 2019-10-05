@@ -50,10 +50,13 @@ jobs:
     # Configure and run clang-tidy.
     - name: Configuring CMake and exporting compile commands
       run: |
+        export CXX=clang-9
+        which clang
+        which clang-9
         mkdir build/
-        echo ${PWD}
-        ls ${PWD}
         cmake -B build/ -S ${PWD} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        cat /home/runner/work/iree/iree/CMakeFiles/CMakeOutput.log
+        cat /home/runner/work/iree/iree/CMakeFiles/CMakeError.log
     - name: Running clang-tidy on changed source files
       # TODO(benvanik): actually filter to changed files.
       run: |
@@ -145,11 +148,11 @@ jobs:
     - name: Configuring compilation environment to use MSVC
       if: matrix.compiler == 'msvc'
       run: |
-        export CC=cl.exe
+        export CXX=cl.exe
     - name: Configuring compilation environment to use ${{ matrix.compiler }} (!MSVC)
       if: matrix.compiler != 'msvc'
       run: |
-        export CC=${{ matrix.compiler }}
+        export CXX=${{ matrix.compiler }}
 
     - name: Building and testing with CMake
       if: matrix.build_system == 'cmake'
