@@ -52,6 +52,7 @@ jobs:
     - name: Building and testing with CMake
       env:
         CXX: clang-9
+        CMAKE_CXX_STANDARD: 17
       # TODO(benvanik): only do ctest on runtime portions
       run: |
         mkdir build/ && cd build/
@@ -94,6 +95,7 @@ jobs:
 #       if: matrix.build_system == 'cmake'
 #       env:
 #         CXX: ${{ matrix.compiler }}
+#         CMAKE_CXX_STANDARD: 17
 #       # TODO(benvanik): configure ctest
 #       run: |
 #         mkdir build/ && cd build/
@@ -143,6 +145,7 @@ jobs:
       if: matrix.build_system == 'cmake'
       env:
         CXX: ${{ matrix.compiler }}
+        CMAKE_CXX_STANDARD: 17
       # TODO(benvanik): configure ctest
       run: |
         echo $CXX
@@ -190,6 +193,7 @@ jobs:
       if: matrix.build_system == 'cmake'
       env:
         CXX: ${{ matrix.compiler }}
+        CMAKE_CXX_STANDARD: 17
       # TODO(benvanik): configure ctest
       run: |
         mkdir build/ && cd build/
@@ -234,6 +238,7 @@ jobs:
       if: matrix.build_system == 'cmake'
       env:
         CXX: ${{ matrix.compiler }}
+        CMAKE_CXX_STANDARD: 17
       # TODO(benvanik): configure ctest
       run: |
         mkdir build
@@ -269,6 +274,7 @@ jobs:
     - name: Configuring CMake and exporting compile commands
       env:
         CXX: clang-9
+        CMAKE_CXX_STANDARD: 17
       run: |
         mkdir build/
         cmake -B build/ -S ${PWD} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
