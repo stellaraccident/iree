@@ -31,33 +31,6 @@ jobs:
         /tmp/git-clang-format origin/master --binary=clang-format-9
         git diff --exit-code
 
-#   tidy:
-#     name: Clang Tidy
-#     runs-on: ubuntu-latest
-#     steps:
-#     - name: Installing dependencies (ubuntu-latest)
-#       run: |
-#         sudo add-apt-repository -y "deb http://mirror.enzu.com/ubuntu/ eoan main universe"
-#         sudo apt-get update -qq
-#         sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq  -y --no-install-recommends clang-tidy-9
-          
-#     - name: Checking out latest version and all submodules
-#       uses: actions/checkout@v1
-#       with:
-#         submodules: true
-#         fetch-depth: 200
-    
-#     # Configure and run clang-tidy.
-#     - name: Configuring CMake and exporting compile commands
-#       run: |
-#         export CXX=clang-9
-#         mkdir build/
-#         cmake -B build/ -S ${PWD} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-#     - name: Running clang-tidy on changed source files
-#       # TODO(benvanik): actually filter to changed files.
-#       run: |
-#         find "${PWD}/iree" \( -name '*.[ch]' -o -name '*.cc' \) -exec clang-tidy-9 -p "${PWD}" {} +
-
   build:
     name: "Build: ${{ matrix.build_config }}"
     runs-on: ${{ matrix.host_os }}
