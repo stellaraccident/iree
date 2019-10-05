@@ -90,22 +90,49 @@ jobs:
     - uses: seanmiddleditch/gha-setup-ninja@master
     - uses: mymindstorm/setup-emsdk@v1
       if: matrix.target_os == 'emscripten'
-    - name: Installing dependencies (ubuntu-latest)
+
+    - name: Installing ninja (ubuntu-latest)
       if: matrix.host_os == 'ubuntu-latest'
       run: |
-        sudo add-apt-repository -y "deb http://mirror.enzu.com/ubuntu/ eoan main universe"
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends ninja-build
+    - name: Installing bazel (ubuntu-latest)
+      if: matrix.host_os == 'ubuntu-latest' && matrix.build_system == 'bazel'
+      run: |
         echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
         curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
         sudo apt-get update -qq
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends bazel llvm-9 ninja-build
-    - name: Installing dependencies (macos-latest)
-      if: matrix.host_os == 'macos-latest'
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends bazel
+    - name: Installing llvm (ubuntu-latest)
+      if: matrix.host_os == 'ubuntu-latest' && matrix.compiler == 'llvm'
       run: |
-        brew install bazel llvm ninja
-    - name: Installing dependencies (windows-latest)
+        sudo add-apt-repository -y "deb http://mirror.enzu.com/ubuntu/ eoan main universe"
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends llvm-9
+
+    - name: Installing ninja (macos-latest)
+      if: matrix.host_os == 'macos-latest' && matrix.build_system == 'ninja'
+      run: |
+        brew install ninja
+    - name: Installing bazel (macos-latest)
+      if: matrix.host_os == 'macos-latest' && matrix.build_system == 'bazel'
+      run: |
+        brew install bazel
+    - name: Installing llvm (macos-latest)
+      if: matrix.host_os == 'macos-latest' && matrix.compiler == 'clang'
+      run: |
+        brew install llvm
+
+    - name: Installing ninja (windows-latest)
       if: matrix.host_os == 'windows-latest'
       run: |
-        choco install -y bazel llvm ninja
+        choco install -y ninja
+    - name: Installing bazel (windows-latest)
+      if: matrix.host_os == 'windows-latest' && matrix.build_system == 'bazel'
+      run: |
+        choco install -y bazel
+    - name: Installing llvm (windows-latest)
+      if: matrix.host_os == 'windows-latest' && matrix.compiler == 'clang'
+      run: |
+        choco install -y llvm
 
     - name: Checking out latest version and all submodules
       uses: actions/checkout@v1
