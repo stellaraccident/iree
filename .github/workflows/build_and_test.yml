@@ -33,7 +33,6 @@ jobs:
 
   tidy:
     name: Clang Tidy
-    #needs: [lint]
     runs-on: ubuntu-latest
     steps:
     - name: Installing dependencies (ubuntu-latest)
@@ -51,6 +50,7 @@ jobs:
     # Configure and run clang-tidy.
     - name: Configuring CMake and exporting compile commands
       run: |
+        mkdir build/
         cmake -B build/ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     - name: Running clang-tidy on changed source files
       # TODO(benvanik): actually filter to changed files.
@@ -59,7 +59,6 @@ jobs:
 
   build:
     name: Build on ${{ matrix.host_os }} with ${{ matrix.compiler }} for ${{ matrix.target_os }}
-    needs: [lint]
     runs-on: ${{ matrix.host_os }}
     strategy:
       matrix:
@@ -114,7 +113,7 @@ jobs:
     - name: Installing dependencies (macos-latest)
       if: matrix.host_os == 'macos-latest'
       run: |
-        brew -y bazel llvm ninja
+        brew install -y bazel llvm ninja
     - name: Installing dependencies (windows-latest)
       if: matrix.host_os == 'windows-latest'
       run: |
@@ -140,7 +139,8 @@ jobs:
       if: matrix.build_system == 'cmake'
       # TODO(benvanik): configure ctest
       run: |
-        cmake -B build/
+        mkdir build/
+        cmake --build build/ -- -j4
 
     - name: Building and testing with Bazel
       if: matrix.build_system == 'bazel'
