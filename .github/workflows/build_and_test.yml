@@ -7,154 +7,87 @@ on:
 jobs:
   # Run clang-format and verify there are no errors. We don't want to bother
   # building until we've at least got clean code.
-  lint:
-    name: clang-format 
+  clang_format:
+    name: clang-format
     runs-on: ubuntu-latest
     steps:
-    - name: Installing dependencies (ubuntu-latest)
+    - name: Installing dependencies
       run: |
         sudo add-apt-repository -y "deb http://mirror.enzu.com/ubuntu/ eoan main universe"
         sudo apt-get update -qq
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends clang-format-9
         wget https://raw.githubusercontent.com/llvm-mirror/clang/master/tools/clang-format/git-clang-format -O /tmp/git-clang-format
         chmod +x /tmp/git-clang-format
-
     - name: Checking out latest version and all submodules
       uses: actions/checkout@v1
       with:
         submodules: true
         fetch-depth: 200
-
     - name: Running clang-format on changed source files
       # TODO(benvanik): actually filter to changed files.
       run: |
         /tmp/git-clang-format origin/master --binary=clang-format-9
         git diff --exit-code
 
-  build:
-    name: ${{ matrix.build_config }}
-    runs-on: ${{ matrix.host_os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        build_config:
-          #- ubuntu-host-bazel-clang
-          - ubuntu-host-cmake-clang
-          #- ubuntu-host-cmake-gcc
-          #- ubuntu-emscripten-cmake-emscripten
-          - macos-host-cmake-clang
-          #- windows-host-bazel-msvc
-          - windows-host-cmake-msvc
-        include:
-#           - build_config: ubuntu-host-bazel-clang
-#             host_os: ubuntu-latest
-#             target_os: host
-#             build_system: bazel
-#             compiler: clang
-          - build_config: ubuntu-host-cmake-clang
-            host_os: ubuntu-latest
-            target_os: host
-            build_system: cmake
-            compiler: clang
-#           - build_config: ubuntu-host-cmake-gcc
-#             host_os: ubuntu-latest
-#             target_os: host
-#             build_system: cmake
-#             compiler: gcc
-#           - build_config: ubuntu-emscripten-cmake-emscripten
-#             host_os: ubuntu-latest
-#             target_os: emscripten
-#             build_system: cmake
-#             compiler: emscripten
-#           - build_config: macos-host-bazel-clang
-#             host_os: macos-latest
-#             target_os: host
-#             build_system: bazel
-#             compiler: clang
-          - build_config: macos-host-cmake-clang
-            host_os: macos-latest
-            target_os: host
-            build_system: cmake
-            compiler: clang
-#           - build_config: windows-host-bazel-msvc
-#             host_os: windows-latest
-#             target_os: host
-#             build_system: bazel
-#             compiler: msvc
-          - build_config: windows-host-cmake-msvc
-            host_os: windows-latest
-            target_os: host
-            build_system: cmake
-            compiler: msvc
-    
+  # Perform analysis via clang-tidy.
+  clang_tidy:
+    name: clang-tidy
+    runs-on: ubuntu-latest
     steps:
-    - uses: seanmiddleditch/gha-setup-ninja@master
-    - uses: mymindstorm/setup-emsdk@v1
-      if: matrix.target_os == 'emscripten'
-
-    - name: Installing ninja (ubuntu-latest)
-      if: matrix.host_os == 'ubuntu-latest'
-      run: |
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends ninja-build
-    - name: Installing bazel (ubuntu-latest)
-      if: matrix.host_os == 'ubuntu-latest' && matrix.build_system == 'bazel'
-      run: |
-        echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
-        curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
-        sudo apt-get update -qq
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends bazel
-    - name: Installing llvm (ubuntu-latest)
-      if: matrix.host_os == 'ubuntu-latest' && matrix.compiler == 'clang'
+    - name: Installing dependencies
       run: |
         sudo add-apt-repository -y "deb http://mirror.enzu.com/ubuntu/ eoan main universe"
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends llvm-9
-
-    - name: Installing ninja (macos-latest)
-      if: matrix.host_os == 'macos-latest'
-      run: |
-        brew install ninja
-    - name: Installing bazel (macos-latest)
-      if: matrix.host_os == 'macos-latest' && matrix.build_system == 'bazel'
-      run: |
-        brew install bazel
-    - name: Installing llvm (macos-latest)
-      if: matrix.host_os == 'macos-latest' && matrix.compiler == 'clang'
-      run: |
-        brew install llvm
-
-    - name: Installing ninja (windows-latest)
-      if: matrix.host_os == 'windows-latest'
-      run: |
-        choco install -y ninja
-    - name: Installing bazel (windows-latest)
-      if: matrix.host_os == 'windows-latest' && matrix.build_system == 'bazel'
-      run: |
-        choco install -y bazel
-    - name: Installing llvm (windows-latest)
-      if: matrix.host_os == 'windows-latest' && matrix.compiler == 'clang'
-      run: |
-        choco install -y llvm
-
+        sudo apt-get update -qq
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends clang-tidy-9
     - name: Checking out latest version and all submodules
       uses: actions/checkout@v1
       with:
         submodules: true
         fetch-depth: 200
-    
-    # TODO(benvanik): setup CC env var for MSVC (use vswhere to find cl.exe?)
-    - name: Configuring compilation environment to use MSVC
-      if: matrix.compiler == 'msvc'
-      run: |
-        export CXX=cl.exe
-    - name: Configuring compilation environment to use clang
-      if: matrix.compiler == 'clang'
+    - name: Configuring CMake and exporting compile commands
       run: |
         export CXX=clang-9
-    - name: Configuring compilation environment to use gcc
-      if: matrix.compiler == 'gcc'
+        mkdir build/
+        cmake -B build/ -S ${PWD} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    - name: Running clang-tidy on changed source files
+      # TODO(benvanik): actually filter to changed files.
       run: |
-        export CXX=gcc
+        find "${PWD}/iree" \( -name '*.[ch]' -o -name '*.cc' \) -exec clang-tidy-9 -p "${PWD}" {} +
 
+  # Build emscripten targets using the emscripten SDK.
+  build_on_emsdk:
+    name: ${{ matrix.host_os }}-${{ matrix.target_os }}-${{ matrix.build_system }}-${{ matrix.compiler }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        host_os: [ubuntu]
+        target_os: [emscripten]
+        build_system: [cmake]
+        compiler: [emcc]
+    steps:
+    - uses: mymindstorm/setup-emsdk@v1
+    - name: Installing ninja
+      run: sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends ninja-build
+    - name: Installing bazel
+      if: matrix.build_system == 'bazel'
+      run: |
+        echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+        curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
+        sudo apt-get update -qq
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends bazel
+    - name: Installing llvm+clang
+      if: startsWith(matrix.compiler, 'clang')
+      run: |
+        sudo add-apt-repository -y "deb http://mirror.enzu.com/ubuntu/ eoan main universe"
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends llvm-9
+    - name: Checking out latest version and all submodules
+      uses: actions/checkout@v1
+      with:
+        submodules: true
+        fetch-depth: 200
+    - name: Configuring compilation environment
+      run: export CXX=${{ matrix.compiler }}
     - name: Building and testing with CMake
       if: matrix.build_system == 'cmake'
       # TODO(benvanik): configure ctest
@@ -162,11 +95,143 @@ jobs:
         mkdir build/ && cd build/
         cmake ..
         cmake --build . -- -j4
-
     - name: Building and testing with Bazel
       if: matrix.build_system == 'bazel'
       run: |
         bazel build //iree/...
         bazel test //iree/...
         
+    # TODO(benvanik): coverage: build with -copt --coverage and `bash <(curl -s https://codecov.io/bash)`
+
+  # Build Linux targets (and targets we can cross compile from Linux).
+  build_on_linux:
+    name: ${{ matrix.host_os }}-${{ matrix.target_os }}-${{ matrix.build_system }}-${{ matrix.compiler }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        host_os: [linux]
+        target_os: [host]
+        build_system: [bazel, cmake]
+        compiler: [clang-9, gcc]    
+    steps:
+    - name: Installing ninja
+      run: sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends ninja-build
+    - name: Installing bazel
+      if: matrix.build_system == 'bazel'
+      run: |
+        echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+        curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
+        sudo apt-get update -qq
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends bazel
+    - name: Installing llvm+clang
+      if: startsWith(matrix.compiler, 'clang')
+      run: |
+        sudo add-apt-repository -y "deb http://mirror.enzu.com/ubuntu/ eoan main universe"
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends llvm-9
+    - name: Checking out latest version and all submodules
+      uses: actions/checkout@v1
+      with:
+        submodules: true
+        fetch-depth: 200
+    - name: Configuring compilation environment
+      run: export CXX=${{ matrix.compiler }}
+    - name: Building and testing with CMake
+      if: matrix.build_system == 'cmake'
+      # TODO(benvanik): configure ctest
+      run: |
+        mkdir build/ && cd build/
+        cmake ..
+        cmake --build . -- -j4
+    - name: Building and testing with Bazel
+      if: matrix.build_system == 'bazel'
+      run: |
+        bazel build //iree/...
+        bazel test //iree/...
+        
+    # TODO(benvanik): coverage: build with -copt --coverage and `bash <(curl -s https://codecov.io/bash)`
+
+  # Build macOS targets.
+  build_on_macos:
+    name: ${{ matrix.host_os }}-${{ matrix.target_os }}-${{ matrix.build_system }}-${{ matrix.compiler }}
+    runs-on: macOS-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        host_os: [macos]
+        target_os: [host]
+        build_system: [bazel, cmake]
+        compiler: [clang-9]
+    steps:
+    - name: Installing ninja
+      run: brew install ninja
+    - name: Installing bazel
+      if: matrix.build_system == 'bazel'
+      run: brew install bazel
+    - name: Installing llvm+clang
+      if: startsWith(matrix.compiler, 'clang')
+      run: brew install llvm
+    - name: Checking out latest version and all submodules
+      uses: actions/checkout@v1
+      with:
+        submodules: true
+        fetch-depth: 200
+    - name: Configuring compilation environment
+      run: export CXX=${{ matrix.compiler }}
+    - name: Building and testing with CMake
+      if: matrix.build_system == 'cmake'
+      # TODO(benvanik): configure ctest
+      run: |
+        mkdir build/ && cd build/
+        cmake ..
+        cmake --build . -- -j4
+    - name: Building and testing with Bazel
+      if: matrix.build_system == 'bazel'
+      run: |
+        bazel build //iree/...
+        bazel test //iree/...
+        
+    # TODO(benvanik): coverage: build with -copt --coverage and `bash <(curl -s https://codecov.io/bash)`
+
+  # Build Windows targets.
+  build_on_windows:
+    name: ${{ matrix.build_config }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        host_os: [windows]
+        target_os: [windows]
+        build_system: [bazel, cmake]
+        compiler: [clang-9, cl]    
+    steps:
+    - name: Installing ninja
+      run: choco install -y ninja
+    - name: Installing bazel
+      if: matrix.build_system == 'bazel'
+      run: choco install -y bazel
+    - name: Installing llvm+clang
+      if: startsWith(matrix.compiler, 'clang')
+      run: choco install -y llvm
+    - name: Checking out latest version and all submodules
+      uses: actions/checkout@v1
+      with:
+        submodules: true
+        fetch-depth: 200
+    - name: Configuring compilation environment
+      run: |
+        export CXX=${{ matrix.compiler }}
+    - name: Building and testing with CMake
+      if: matrix.build_system == 'cmake'
+      # TODO(benvanik): configure ctest
+      run: |
+        mkdir build/ && cd build/
+        cmake ..
+        cmake --build . -- -j4
+    - name: Building and testing with Bazel
+      if: matrix.build_system == 'bazel'
+      run: |
+        bazel build //iree/...
+        bazel test //iree/...
+
     # TODO(benvanik): coverage: build with -copt --coverage and `bash <(curl -s https://codecov.io/bash)`
