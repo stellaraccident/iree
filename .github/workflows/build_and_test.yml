@@ -63,48 +63,55 @@ jobs:
     runs-on: ${{ matrix.host_os }}
     strategy:
       matrix:
-        build_config: [ubuntu-host-bazel-clang, ubuntu-host-cmake-clang, ubuntu-host-cmake-gcc, ubuntu-emscripten-cmake-emscripten, macos-host-cmake-clang, windows-host-bazel-msvc, windows-host-cmake-msvc]
-        include:
-#           - build_config: ubuntu-host-bazel-clang
+        build_config:
+          - ubuntu-host-bazel-clang
+          - ubuntu-host-cmake-clang
+          - ubuntu-host-cmake-gcc
+          - ubuntu-emscripten-cmake-emscripten
+          - macos-host-cmake-clang
+          - windows-host-bazel-msvc
+          - windows-host-cmake-msvc
+#         include:
+# #           - build_config: ubuntu-host-bazel-clang
+# #             host_os: ubuntu-latest
+# #             target_os: host
+# #             build_system: bazel
+# #             compiler: clang
+#           - build_config: ubuntu-host-cmake-clang
 #             host_os: ubuntu-latest
 #             target_os: host
-#             build_system: bazel
+#             build_system: cmake
 #             compiler: clang
-          - build_config: ubuntu-host-cmake-clang
-            host_os: ubuntu-latest
-            target_os: host
-            build_system: cmake
-            compiler: clang
-          - build_config: ubuntu-host-cmake-gcc
-            host_os: ubuntu-latest
-            target_os: host
-            build_system: cmake
-            compiler: gcc
-          - build_config: ubuntu-emscripten-cmake-emscripten
-            host_os: ubuntu-latest
-            target_os: emscripten
-            build_system: cmake
-            compiler: emscripten
-#           - build_config: macos-host-bazel-clang
+#           - build_config: ubuntu-host-cmake-gcc
+#             host_os: ubuntu-latest
+#             target_os: host
+#             build_system: cmake
+#             compiler: gcc
+#           - build_config: ubuntu-emscripten-cmake-emscripten
+#             host_os: ubuntu-latest
+#             target_os: emscripten
+#             build_system: cmake
+#             compiler: emscripten
+# #           - build_config: macos-host-bazel-clang
+# #             host_os: macos-latest
+# #             target_os: host
+# #             build_system: bazel
+# #             compiler: clang
+#           - build_config: macos-host-cmake-clang
 #             host_os: macos-latest
 #             target_os: host
-#             build_system: bazel
+#             build_system: cmake
 #             compiler: clang
-          - build_config: macos-host-cmake-clang
-            host_os: macos-latest
-            target_os: host
-            build_system: cmake
-            compiler: clang
-#           - build_config: windows-host-bazel-msvc
+# #           - build_config: windows-host-bazel-msvc
+# #             host_os: windows-latest
+# #             target_os: host
+# #             build_system: bazel
+# #             compiler: msvc
+#           - build_config: windows-host-cmake-msvc
 #             host_os: windows-latest
 #             target_os: host
-#             build_system: bazel
+#             build_system: cmake
 #             compiler: msvc
-          - build_config: windows-host-cmake-msvc
-            host_os: windows-latest
-            target_os: host
-            build_system: cmake
-            compiler: msvc
     
     steps:
     - uses: seanmiddleditch/gha-setup-ninja@master
