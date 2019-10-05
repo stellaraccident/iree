@@ -19,10 +19,9 @@ jobs:
         wget https://raw.githubusercontent.com/llvm-mirror/clang/master/tools/clang-format/git-clang-format -O /tmp/git-clang-format
         chmod +x /tmp/git-clang-format
     - name: Checking out latest version and all submodules
-      uses: actions/checkout@v1
-      with:
-        submodules: true
-        fetch-depth: 200
+      run: |
+        git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE --no-checkout --no-tags --jobs 4 --single-branch --branch $GITHUB_SHA
+        git submodule update --init --depth 200
     - name: Running clang-format on changed source files
       # TODO(benvanik): actually filter to changed files.
       run: |
@@ -45,8 +44,9 @@ jobs:
         submodules: true
         fetch-depth: 200
     - name: Configuring CMake and exporting compile commands
+      env:
+        CXX: clang-9
       run: |
-        export CXX=clang-9
         mkdir build/
         cmake -B build/ -S ${PWD} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     - name: Running clang-tidy on changed source files
@@ -86,10 +86,10 @@ jobs:
 #       with:
 #         submodules: true
 #         fetch-depth: 200
-#     - name: Configuring compilation environment
-#       run: export CXX=${{ matrix.compiler }}
 #     - name: Building and testing with CMake
 #       if: matrix.build_system == 'cmake'
+#       env:
+#         CXX: ${{ matrix.compiler }}
 #       # TODO(benvanik): configure ctest
 #       run: |
 #         mkdir build/ && cd build/
@@ -97,6 +97,8 @@ jobs:
 #         cmake --build . -- -j4
 #     - name: Building and testing with Bazel
 #       if: matrix.build_system == 'bazel'
+#       env:
+#         CXX: ${{ matrix.compiler }}
 #       run: |
 #         bazel build //iree/...
 #         bazel test //iree/...
@@ -132,10 +134,10 @@ jobs:
       with:
         submodules: true
         fetch-depth: 200
-    - name: Configuring compilation environment
-      run: export CXX=${{ matrix.compiler }}
     - name: Building and testing with CMake
       if: matrix.build_system == 'cmake'
+      env:
+        CXX: ${{ matrix.compiler }}
       # TODO(benvanik): configure ctest
       run: |
         mkdir build/ && cd build/
@@ -143,6 +145,8 @@ jobs:
         cmake --build . -- -j4
     - name: Building and testing with Bazel
       if: matrix.build_system == 'bazel'
+      env:
+        CXX: ${{ matrix.compiler }}
       run: |
         bazel build //iree/...
         bazel test //iree/...
@@ -173,10 +177,10 @@ jobs:
       with:
         submodules: true
         fetch-depth: 200
-    - name: Configuring compilation environment
-      run: export CXX=${{ matrix.compiler }}
     - name: Building and testing with CMake
       if: matrix.build_system == 'cmake'
+      env:
+        CXX: ${{ matrix.compiler }}
       # TODO(benvanik): configure ctest
       run: |
         mkdir build/ && cd build/
@@ -184,6 +188,8 @@ jobs:
         cmake --build . -- -j4
     - name: Building and testing with Bazel
       if: matrix.build_system == 'bazel'
+      env:
+        CXX: ${{ matrix.compiler }}
       run: |
         bazel build //iree/...
         bazel test //iree/...
@@ -214,11 +220,10 @@ jobs:
       with:
         submodules: true
         fetch-depth: 200
-    - name: Configuring compilation environment
-      run: |
-        export CXX=${{ matrix.compiler }}
     - name: Building and testing with CMake
       if: matrix.build_system == 'cmake'
+      env:
+        CXX: ${{ matrix.compiler }}
       # TODO(benvanik): configure ctest
       run: |
         mkdir build/ && cd build/
@@ -226,6 +231,8 @@ jobs:
         cmake --build . -- -j4
     - name: Building and testing with Bazel
       if: matrix.build_system == 'bazel'
+      env:
+        CXX: ${{ matrix.compiler }}
       run: |
         bazel build //iree/...
         bazel test //iree/...
