@@ -51,7 +51,7 @@ jobs:
     - name: Configuring CMake and exporting compile commands
       run: |
         mkdir build/
-        cmake -B build/ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        cmake -S . -B build/ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     - name: Running clang-tidy on changed source files
       # TODO(benvanik): actually filter to changed files.
       run: |
@@ -113,7 +113,7 @@ jobs:
     - name: Installing dependencies (macos-latest)
       if: matrix.host_os == 'macos-latest'
       run: |
-        brew install -y bazel llvm ninja
+        brew install bazel llvm ninja
     - name: Installing dependencies (windows-latest)
       if: matrix.host_os == 'windows-latest'
       run: |
@@ -140,6 +140,7 @@ jobs:
       # TODO(benvanik): configure ctest
       run: |
         mkdir build/
+        cmake -S . -B build/
         cmake --build build/ -- -j4
 
     - name: Building and testing with Bazel
