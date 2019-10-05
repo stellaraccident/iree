@@ -33,7 +33,7 @@ jobs:
 
   tidy:
     name: Clang Tidy
-    needs: [lint]
+    #needs: [lint]
     runs-on: ubuntu-latest
     steps:
     - name: Installing dependencies (ubuntu-latest)
@@ -102,7 +102,7 @@ jobs:
     - uses: seanmiddleditch/gha-setup-ninja@master
     - uses: mymindstorm/setup-emsdk@v1
       if: matrix.target_os == 'emscripten'
-    - name: Installing dependencies (${{ matrix.host_os }})
+    - name: Installing dependencies (ubuntu-latest)
       if: matrix.host_os == 'ubuntu-latest'
       run: |
         sudo add-apt-repository -y "deb http://mirror.enzu.com/ubuntu/ eoan main universe"
@@ -111,16 +111,14 @@ jobs:
         curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
         sudo apt-get update -qq
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends install bazel llvm-9 ninja-build
-    - name: Installing dependencies (${{ matrix.host_os }})
-      uses: artemnovichkov/action-homebrew@master
+    - name: Installing dependencies (macos-latest)
       if: matrix.host_os == 'macos-latest'
-      with:
-        args: bazel llvm ninja
-    - name: Installing dependencies (${{ matrix.host_os }})
-      uses: crazy-max/ghaction-chocolatey@master
+      run: |
+        brew -y bazel llvm ninja
+    - name: Installing dependencies (windows-latest)
       if: matrix.host_os == 'windows-latest'
-      with:
-        args: bazel llvm ninja
+      run: |
+        choco install -y bazel llvm ninja
 
     - name: Checking out latest version and all submodules
       uses: actions/checkout@v1
@@ -129,11 +127,11 @@ jobs:
         fetch-depth: 200
     
     # TODO(benvanik): setup CC env var for MSVC (use vswhere to find cl.exe?)
-    - name: Configuring compilation environment to use ${{ matrix.compiler }}
+    - name: Configuring compilation environment to use MSVC
       if: matrix.compiler == 'msvc'
       run: |
         export CC=cl.exe
-    - name: Configuring compilation environment to use ${{ matrix.compiler }}
+    - name: Configuring compilation environment to use ${{ matrix.compiler }} (!MSVC)
       if: matrix.compiler != 'msvc'
       run: |
         export CC=${{ matrix.compiler }}
