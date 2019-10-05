@@ -53,7 +53,7 @@ jobs:
         mkdir build/
         echo ${PWD}
         ls ${PWD}
-        cmake -S ${PWD} -B build/ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        cmake -B build/ -S ${PWD} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     - name: Running clang-tidy on changed source files
       # TODO(benvanik): actually filter to changed files.
       run: |
