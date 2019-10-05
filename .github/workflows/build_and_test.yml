@@ -31,36 +31,32 @@ jobs:
         /tmp/git-clang-format origin/master --binary=clang-format-9
         git diff --exit-code
 
-  tidy:
-    name: Clang Tidy
-    runs-on: ubuntu-latest
-    steps:
-    - name: Installing dependencies (ubuntu-latest)
-      run: |
-        sudo add-apt-repository -y "deb http://mirror.enzu.com/ubuntu/ eoan main universe"
-        sudo apt-get update -qq
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq  -y --no-install-recommends clang-tidy-9
+#   tidy:
+#     name: Clang Tidy
+#     runs-on: ubuntu-latest
+#     steps:
+#     - name: Installing dependencies (ubuntu-latest)
+#       run: |
+#         sudo add-apt-repository -y "deb http://mirror.enzu.com/ubuntu/ eoan main universe"
+#         sudo apt-get update -qq
+#         sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq  -y --no-install-recommends clang-tidy-9
           
-    - name: Checking out latest version and all submodules
-      uses: actions/checkout@v1
-      with:
-        submodules: true
-        fetch-depth: 200
+#     - name: Checking out latest version and all submodules
+#       uses: actions/checkout@v1
+#       with:
+#         submodules: true
+#         fetch-depth: 200
     
-    # Configure and run clang-tidy.
-    - name: Configuring CMake and exporting compile commands
-      run: |
-        export CXX=clang-9
-        which clang
-        which clang-9
-        mkdir build/
-        cmake -B build/ -S ${PWD} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-        cat /home/runner/work/iree/iree/CMakeFiles/CMakeOutput.log
-        cat /home/runner/work/iree/iree/CMakeFiles/CMakeError.log
-    - name: Running clang-tidy on changed source files
-      # TODO(benvanik): actually filter to changed files.
-      run: |
-        find "${PWD}/iree" \( -name '*.[ch]' -o -name '*.cc' \) -exec clang-tidy-9 -p "${PWD}" {} +
+#     # Configure and run clang-tidy.
+#     - name: Configuring CMake and exporting compile commands
+#       run: |
+#         export CXX=clang-9
+#         mkdir build/
+#         cmake -B build/ -S ${PWD} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+#     - name: Running clang-tidy on changed source files
+#       # TODO(benvanik): actually filter to changed files.
+#       run: |
+#         find "${PWD}/iree" \( -name '*.[ch]' -o -name '*.cc' \) -exec clang-tidy-9 -p "${PWD}" {} +
 
   build:
     name: Build on ${{ matrix.host_os }} with ${{ matrix.compiler }} for ${{ matrix.target_os }}
@@ -149,17 +145,21 @@ jobs:
       if: matrix.compiler == 'msvc'
       run: |
         export CXX=cl.exe
-    - name: Configuring compilation environment to use ${{ matrix.compiler }} (!MSVC)
-      if: matrix.compiler != 'msvc'
+    - name: Configuring compilation environment to use clang
+      if: matrix.compiler == 'clang'
       run: |
-        export CXX=${{ matrix.compiler }}
+        export CXX=clang-9
+    - name: Configuring compilation environment to use gcc
+      if: matrix.compiler == 'gcc'
+      run: |
+        export CXX=gcc
 
     - name: Building and testing with CMake
       if: matrix.build_system == 'cmake'
       # TODO(benvanik): configure ctest
       run: |
         mkdir build/
-        cmake -S ${PWD} -B build/
+        cmake -B build/ -S ${PWD}
         cmake --build build/ -- -j4
 
     - name: Building and testing with Bazel
