@@ -20,7 +20,8 @@ jobs:
         chmod +x /tmp/git-clang-format
     - name: Checking out latest version and all submodules
       run: |
-        git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE --no-checkout --no-tags --jobs 4 --single-branch --branch $GITHUB_SHA
+        git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE --no-checkout --no-tags --jobs 4 --single-branch --branch $GITHUB_REF
+        git checkout $GITHUB_SHA
         git submodule update --init --depth 200
     - name: Running clang-format on changed source files
       # TODO(benvanik): actually filter to changed files.
@@ -40,7 +41,8 @@ jobs:
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends clang-tidy-9
     - name: Checking out latest version and all submodules
       run: |
-        git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE --no-checkout --no-tags --jobs 4 --single-branch --branch $GITHUB_SHA
+        git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE --no-checkout --no-tags --jobs 4 --single-branch --branch $GITHUB_REF
+        git checkout $GITHUB_SHA
         git submodule update --init --depth 200
     - name: Configuring CMake and exporting compile commands
       env:
@@ -82,7 +84,8 @@ jobs:
 #         sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends llvm-9
 #     - name: Checking out latest version and all submodules
 #       run: |
-#         git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE --no-checkout --no-tags --jobs 4 --single-branch --branch $GITHUB_SHA
+#         git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE --no-checkout --no-tags --jobs 4 --single-branch --branch $GITHUB_REF
+#         git checkout $GITHUB_SHA
 #         git submodule update --init --depth 200
 #     - name: Building and testing with CMake
 #       if: matrix.build_system == 'cmake'
@@ -129,7 +132,8 @@ jobs:
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends llvm-9
     - name: Checking out latest version and all submodules
       run: |
-        git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE --no-checkout --no-tags --jobs 4 --single-branch --branch $GITHUB_SHA
+        git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE --no-checkout --no-tags --jobs 4 --single-branch --branch $GITHUB_REF
+        git checkout $GITHUB_SHA
         git submodule update --init --depth 200
     - name: Building and testing with CMake
       if: matrix.build_system == 'cmake'
@@ -171,7 +175,8 @@ jobs:
       run: brew install llvm
     - name: Checking out latest version and all submodules
       run: |
-        git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE --no-checkout --no-tags --jobs 4 --single-branch --branch $GITHUB_SHA
+        git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE --no-checkout --no-tags --jobs 4 --single-branch --branch $GITHUB_REF
+        git checkout $GITHUB_SHA
         git submodule update --init --depth 200
     - name: Building and testing with CMake
       if: matrix.build_system == 'cmake'
@@ -193,7 +198,7 @@ jobs:
 
   # Build Windows targets.
   build_on_windows:
-    name: ${{ matrix.build_config }}
+    name: ${{ matrix.host_os }}-${{ matrix.target_os }}-${{ matrix.build_system }}-${{ matrix.compiler }}
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -213,7 +218,8 @@ jobs:
       run: choco install -y llvm
     - name: Checking out latest version and all submodules
       run: |
-        git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE --no-checkout --no-tags --jobs 4 --single-branch --branch $GITHUB_SHA
+        git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE --no-checkout --no-tags --jobs 4 --single-branch --branch $GITHUB_REF
+        git checkout $GITHUB_SHA
         git submodule update --init --depth 200
     - name: Building and testing with CMake
       if: matrix.build_system == 'cmake'
