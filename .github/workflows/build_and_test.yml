@@ -35,12 +35,13 @@ jobs:
     name: ${{ matrix.build_config }}
     runs-on: ${{ matrix.host_os }}
     strategy:
+      fail-fast: false
       matrix:
         build_config:
           #- ubuntu-host-bazel-clang
           - ubuntu-host-cmake-clang
           #- ubuntu-host-cmake-gcc
-          - ubuntu-emscripten-cmake-emscripten
+          #- ubuntu-emscripten-cmake-emscripten
           - macos-host-cmake-clang
           #- windows-host-bazel-msvc
           - windows-host-cmake-msvc
@@ -60,11 +61,11 @@ jobs:
 #             target_os: host
 #             build_system: cmake
 #             compiler: gcc
-          - build_config: ubuntu-emscripten-cmake-emscripten
-            host_os: ubuntu-latest
-            target_os: emscripten
-            build_system: cmake
-            compiler: emscripten
+#           - build_config: ubuntu-emscripten-cmake-emscripten
+#             host_os: ubuntu-latest
+#             target_os: emscripten
+#             build_system: cmake
+#             compiler: emscripten
 #           - build_config: macos-host-bazel-clang
 #             host_os: macos-latest
 #             target_os: host
