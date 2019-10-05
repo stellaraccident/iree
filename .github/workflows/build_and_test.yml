@@ -36,8 +36,10 @@ jobs:
     strategy:
       fail-fast: true
     steps:
-    - name: Installing ninja
-      run: sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends ninja-build
+    - name: Installing dependencies
+      run: |
+        sudo add-apt-repository -y "deb http://mirror.enzu.com/ubuntu/ eoan main universe"
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y llvm-9 ninja-build libc++
     # TODO(benvanik): trim tensorflow dep - maybe disable ruy?
     - name: Checking out latest version and all submodules
       run: |
@@ -49,11 +51,11 @@ jobs:
             submodule update --init --depth 1000 --jobs 8
     - name: Building and testing with CMake
       env:
-        CXX: clang
+        CXX: clang-9
       # TODO(benvanik): only do ctest on runtime portions
       run: |
         mkdir build/ && cd build/
-        cmake ..
+        cmake .. -GNinja
         cmake --build . -- -j4
 
   # Build emscripten targets using the emscripten SDK.
@@ -114,7 +116,7 @@ jobs:
       matrix:
         host_os: [linux]
         target_os: [host]
-        build_system: [bazel, cmake]
+        build_system: [cmake]
         compiler: [clang-9, gcc]    
     steps:
     - name: Installing ninja
@@ -131,7 +133,7 @@ jobs:
       if: startsWith(matrix.compiler, 'clang')
       run: |
         sudo add-apt-repository -y "deb http://mirror.enzu.com/ubuntu/ eoan main universe"
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends llvm-9
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y llvm-9
     - name: Checking out latest version and all submodules
       run: |
         git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE --no-checkout --no-tags
@@ -144,7 +146,7 @@ jobs:
       # TODO(benvanik): configure ctest
       run: |
         mkdir build/ && cd build/
-        cmake ..
+        cmake .. -GNinja
         cmake --build . -- -j4
     - name: Building and testing with Bazel
       if: matrix.build_system == 'bazel'
@@ -164,7 +166,7 @@ jobs:
       matrix:
         host_os: [macos]
         target_os: [host]
-        build_system: [bazel, cmake]
+        build_system: [cmake]
         compiler: [clang-9]
     steps:
     - name: Installing ninja
@@ -188,7 +190,7 @@ jobs:
       # TODO(benvanik): configure ctest
       run: |
         mkdir build/ && cd build/
-        cmake ..
+        cmake .. -GNinja
         cmake --build . -- -j4
     - name: Building and testing with Bazel
       if: matrix.build_system == 'bazel'
@@ -208,7 +210,7 @@ jobs:
       matrix:
         host_os: [windows]
         target_os: [windows]
-        build_system: [bazel, cmake]
+        build_system: [cmake]
         compiler: [clang-9, cl]    
     steps:
     - name: Installing ninja
@@ -222,8 +224,8 @@ jobs:
       run: choco install -y llvm
     - name: Checking out latest version and all submodules
       run: |
-        git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE --no-checkout --no-tags
-        git checkout $GITHUB_SHA
+        git clone https://github.com/%GITHUB_REPOSITORY% %GITHUB_WORKSPACE% --no-checkout --no-tags
+        git checkout %GITHUB_SHA%
         git submodule update --init --depth 1000 --jobs 8
     - name: Building and testing with CMake
       if: matrix.build_system == 'cmake'
@@ -232,7 +234,7 @@ jobs:
       # TODO(benvanik): configure ctest
       run: |
         mkdir build/ && cd build/
-        cmake ..
+        cmake .. -GNinja
         cmake --build . -- -j4
     - name: Building and testing with Bazel
       if: matrix.build_system == 'bazel'
