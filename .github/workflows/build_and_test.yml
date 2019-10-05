@@ -8,7 +8,7 @@ jobs:
   # Run clang-format and verify there are no errors. We don't want to bother
   # building until we've at least got clean code.
   lint:
-    name: Lint 
+    name: clang-format 
     runs-on: ubuntu-latest
     steps:
     - name: Installing dependencies (ubuntu-latest)
@@ -32,17 +32,17 @@ jobs:
         git diff --exit-code
 
   build:
-    name: "Build: ${{ matrix.build_config }}"
-    runs-on: ubuntu-latest
+    name: ${{ matrix.build_config }}
+    runs-on: ${{ matrix.host_os }}
     strategy:
       matrix:
         build_config:
-          - ubuntu-host-bazel-clang
+          #- ubuntu-host-bazel-clang
           - ubuntu-host-cmake-clang
           - ubuntu-host-cmake-gcc
           - ubuntu-emscripten-cmake-emscripten
           - macos-host-cmake-clang
-          - windows-host-bazel-msvc
+          #- windows-host-bazel-msvc
           - windows-host-cmake-msvc
         include:
 #           - build_config: ubuntu-host-bazel-clang
