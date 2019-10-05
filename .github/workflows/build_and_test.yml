@@ -4,6 +4,12 @@ on:
   pull_request:
   push:
 
+x-checkout-all: &checkout-all
+  name: Checking out latest version and all submodules
+  run: |
+     git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE --no-checkout --no-tags
+     git checkout $GITHUB_SHA
+
 jobs:
   # Run clang-format and verify there are no errors. We don't want to bother
   # building until we've at least got clean code.
@@ -19,10 +25,7 @@ jobs:
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends clang-format-9
         wget https://raw.githubusercontent.com/llvm-mirror/clang/master/tools/clang-format/git-clang-format -O /tmp/git-clang-format
         chmod +x /tmp/git-clang-format
-    - name: Checking out latest version and all submodules
-      run: |
-        git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE --no-checkout --no-tags
-        git checkout $GITHUB_SHA
+    - *checkout-all
     - name: Running clang-format on changed source files
       # TODO(benvanik): actually filter to changed files.
       run: |
@@ -118,6 +121,7 @@ jobs:
         compiler: [clang-9, gcc]    
     steps:
     - name: Installing ninja
+      if: matrix.build_system == 'cmake'
       run: sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq -y --no-install-recommends ninja-build
     - name: Installing bazel
       if: matrix.build_system == 'bazel'
@@ -167,6 +171,7 @@ jobs:
         compiler: [clang-9]
     steps:
     - name: Installing ninja
+      if: matrix.build_system == 'cmake'
       run: brew install ninja
     - name: Installing bazel
       if: matrix.build_system == 'bazel'
@@ -210,6 +215,7 @@ jobs:
         compiler: [clang-9, cl]    
     steps:
     - name: Installing ninja
+      if: matrix.build_system == 'cmake'
       run: choco install -y ninja
     - name: Installing bazel
       if: matrix.build_system == 'bazel'
