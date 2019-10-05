@@ -53,7 +53,7 @@ jobs:
         mkdir build/
         echo ${PWD}
         ls ${PWD}
-        cmake -S${PWD} -Bbuild/ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        cmake -S ${PWD} -B build/ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     - name: Running clang-tidy on changed source files
       # TODO(benvanik): actually filter to changed files.
       run: |
@@ -156,7 +156,7 @@ jobs:
       # TODO(benvanik): configure ctest
       run: |
         mkdir build/
-        cmake -S${PWD} -Bbuild/
+        cmake -S ${PWD} -B build/
         cmake --build build/ -- -j4
 
     - name: Building and testing with Bazel
