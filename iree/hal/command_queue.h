@@ -93,6 +93,8 @@ class CommandQueue {
     return Submit(absl::MakeConstSpan(&batch, 1), std::move(fence));
   }
 
+  // DO NOT SUBMIT remove flush from CommandQueue
+
   // Flushes any requests that are pending with a queue and ensure they begin
   // executing ASAP. May be a no-op.
   //
