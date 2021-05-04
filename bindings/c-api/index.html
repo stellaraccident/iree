@@ -504,6 +504,74 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#concepts" class="md-nav__link">
+    Concepts
+  </a>
+  
+    <nav class="md-nav" aria-label="Concepts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#iree-vm" class="md-nav__link">
+    IREE VM
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iree-hal" class="md-nav__link">
+    IREE HAL
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-the-c-api" class="md-nav__link">
+    Using the C API
+  </a>
+  
+    <nav class="md-nav" aria-label="Using the C API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    Setup
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configure-stateful-objects" class="md-nav__link">
+    Configure stateful objects
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#invoke-functions" class="md-nav__link">
+    Invoke functions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cleanup-resources" class="md-nav__link">
+    Cleanup resources
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -606,6 +674,74 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#concepts" class="md-nav__link">
+    Concepts
+  </a>
+  
+    <nav class="md-nav" aria-label="Concepts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#iree-vm" class="md-nav__link">
+    IREE VM
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iree-hal" class="md-nav__link">
+    IREE HAL
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-the-c-api" class="md-nav__link">
+    Using the C API
+  </a>
+  
+    <nav class="md-nav" aria-label="Using the C API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    Setup
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configure-stateful-objects" class="md-nav__link">
+    Configure stateful objects
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#invoke-functions" class="md-nav__link">
+    Invoke functions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cleanup-resources" class="md-nav__link">
+    Cleanup resources
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -620,12 +756,215 @@
                 
                 
                 <h1 id="c-api-bindings">C API bindings<a class="headerlink" href="#c-api-bindings" title="Permanent link">&para;</a></h1>
-<!-- TODO(??): overview, advantages/disadvantages to using raw C APIs -->
-
+<p>IREE provides a low level C API for its runtime<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup>, which can be used directly or
+through higher level APIs and language bindings built on top of it.</p>
+<p>API header files are organized by runtime component:</p>
+<table>
+<thead>
+<tr>
+<th>Component header file</th>
+<th>Overview</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/google/iree/blob/main/iree/base/api.h">iree/base/api.h</a></td>
+<td>Core API, type definitions, ownership policies, utilities</td>
+</tr>
+<tr>
+<td><a href="https://github.com/google/iree/blob/main/iree/vm/api.h">iree/vm/api.h</a></td>
+<td>VM APIs: loading modules, I/O, calling functions</td>
+</tr>
+<tr>
+<td><a href="https://github.com/google/iree/blob/main/iree/hal/api.h">iree/hal/api.h</a></td>
+<td>HAL APIs: device management, synchronization, accessing hardware features</td>
+</tr>
+</tbody>
+</table>
+<p>The <a href="https://github.com/google/iree/tree/main/iree/samples">iree/samples/</a>
+directory demonstrates several ways to use IREE's C API.</p>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
-<!-- TODO(??): build from source, vcpkg -->
+<p>To use IREE's C API, you will need to build the runtime
+<a href="../../building-from-source/getting-started/">from source</a>. The
+<a href="https://github.com/iml130/iree-template-cpp">iree-template-cpp</a> community
+project also shows how to integrate IREE into an external project using
+CMake<sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup>.</p>
+<h2 id="concepts">Concepts<a class="headerlink" href="#concepts" title="Permanent link">&para;</a></h2>
+<p>By default, IREE uses its own tiny Virtual Machine (VM) at runtime to interpret
+program instructions on the host system. VM instructions may also be lowered
+further to LLVM IR, C, or other representations for static or resource
+constrained deployment.</p>
+<p>The VM supports generic operations like loads, stores, arithmetic, function
+calls, and control flow. It builds streams of more complex program logic and
+dense math into command buffers that are dispatched to hardware backends
+through the Hardware Abstraction Layer (HAL) interface.</p>
+<p>Most interaction with IREE's C API involves either the VM or the HAL.</p>
+<!-- TODO(scotttodd): diagrams -->
 
-<!-- TODO(??): troubleshooting -->
+<h3 id="iree-vm">IREE VM<a class="headerlink" href="#iree-vm" title="Permanent link">&para;</a></h3>
+<ul>
+<li>VM <em>instances</em> can serve multiple isolated execution <em>contexts</em></li>
+<li>VM <em>contexts</em> are effectively sandboxes for loading modules and running
+  programs</li>
+<li>VM <em>modules</em> provide extra functionality to execution <em>contexts</em>, such as
+  access to hardware accelerators through the HAL. Compiled user programs are
+  also modules.</li>
+</ul>
+<h3 id="iree-hal">IREE HAL<a class="headerlink" href="#iree-hal" title="Permanent link">&para;</a></h3>
+<ul>
+<li>HAL <em>drivers</em> are used to enumerate and create HAL <em>devices</em></li>
+<li>HAL <em>devices</em> interface with hardware, such as by allocating device memory,
+  preparing executables, recording and dispatching command buffers, and
+  synchronizing with the host</li>
+<li>HAL <em>buffers</em> and <em>buffer views</em> represent storage and shaped/typed views
+  into that storage (aka "tensors")</li>
+</ul>
+<h2 id="using-the-c-api">Using the C API<a class="headerlink" href="#using-the-c-api" title="Permanent link">&para;</a></h2>
+<h3 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">&para;</a></h3>
+<p>Include headers:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#include</span> <span class="cpf">&quot;iree/base/api.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&quot;iree/hal/api.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&quot;iree/vm/api.h&quot;</span><span class="cp"></span>
+
+<span class="c1">// The VM bytecode and HAL modules will typically be included, along</span>
+<span class="c1">// with those for the specific HAL drivers your application uses.</span>
+<span class="c1">// Functionality extensions can be used via custom modules.</span>
+<span class="cp">#include</span> <span class="cpf">&quot;iree/modules/hal/hal_module.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&quot;iree/hal/dylib/registration/driver_module.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&quot;iree/vm/bytecode_module.h&quot;</span><span class="cp"></span>
+</code></pre></div>
+<p>Check the API version and register components:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Statically linking the runtime should never have version conflicts,</span>
+<span class="c1">// however dynamically linking against a runtime shared object must</span>
+<span class="c1">// always verify that the version is as expected.</span>
+<span class="n">iree_api_version_t</span> <span class="n">actual_version</span><span class="p">;</span>
+<span class="n">IREE_CHECK_OK</span><span class="p">(</span><span class="n">iree_api_version_check</span><span class="p">(</span><span class="n">IREE_API_VERSION_LATEST</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">actual_version</span><span class="p">));</span>
+
+<span class="c1">// Modules with custom types must be statically registered before use.</span>
+<span class="n">IREE_CHECK_OK</span><span class="p">(</span><span class="n">iree_hal_module_register_types</span><span class="p">());</span>
+
+<span class="c1">// Device drivers are managed through registries.</span>
+<span class="c1">// Applications may use multiple registries to more finely control driver</span>
+<span class="c1">// lifetimes and visibility.</span>
+<span class="n">IREE_CHECK_OK</span><span class="p">(</span><span class="n">iree_hal_dylib_driver_module_register</span><span class="p">(</span>
+    <span class="n">iree_hal_driver_registry_default</span><span class="p">()));</span>
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The <code>IREE_CHECK_OK()</code> macro calls <code>assert()</code> if an error occurs.
+Applications should propagate errors and handle or report them as desired.</p>
+</div>
+<h3 id="configure-stateful-objects">Configure stateful objects<a class="headerlink" href="#configure-stateful-objects" title="Permanent link">&para;</a></h3>
+<p>Create a VM instance along with a HAL driver and device:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Applications should try to reuse instances so resource usage across contexts</span>
+<span class="c1">// is handled and extraneous device interaction is avoided.</span>
+<span class="n">iree_vm_instance_t</span><span class="o">*</span> <span class="n">instance</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="n">IREE_CHECK_OK</span><span class="p">(</span><span class="n">iree_vm_instance_create</span><span class="p">(</span><span class="n">iree_allocator_system</span><span class="p">(),</span> <span class="o">&amp;</span><span class="n">instance</span><span class="p">));</span>
+
+<span class="c1">// We use the CPU &quot;dylib&quot; driver in this example, but could use a different</span>
+<span class="c1">// driver like the GPU &quot;vulkan&quot; driver. The driver(s) used should match with</span>
+<span class="c1">// the target(s) specified during compilation.</span>
+<span class="n">iree_hal_driver_t</span><span class="o">*</span> <span class="n">driver</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="n">IREE_CHECK_OK</span><span class="p">(</span><span class="n">iree_hal_driver_registry_try_create_by_name</span><span class="p">(</span>
+    <span class="n">iree_hal_driver_registry_default</span><span class="p">(),</span>
+    <span class="n">iree_string_view_literal</span><span class="p">(</span><span class="s">&quot;dylib&quot;</span><span class="p">),</span>
+    <span class="n">iree_allocator_system</span><span class="p">(),</span> <span class="o">&amp;</span><span class="n">driver</span><span class="p">));</span>
+
+<span class="c1">// Drivers may support multiple devices, such as when a machine has multiple</span>
+<span class="c1">// GPUs. You may either enumerate devices and select based on their properties,</span>
+<span class="c1">// or just use the default device.</span>
+<span class="n">iree_hal_device_t</span><span class="o">*</span> <span class="n">device</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="n">IREE_CHECK_OK</span><span class="p">(</span><span class="n">iree_hal_driver_create_default_device</span><span class="p">(</span>
+    <span class="n">driver</span><span class="p">,</span> <span class="n">iree_allocator_system</span><span class="p">(),</span> <span class="o">&amp;</span><span class="n">device</span><span class="p">));</span>
+
+<span class="c1">// Create a HAL module initialized to use the newly created device.</span>
+<span class="c1">// We&#39;ll load this module into a VM context later.</span>
+<span class="n">iree_vm_module_t</span><span class="o">*</span> <span class="n">hal_module</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="n">IREE_CHECK_OK</span><span class="p">(</span>
+    <span class="n">iree_hal_module_create</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">iree_allocator_system</span><span class="p">(),</span> <span class="o">&amp;</span><span class="n">hal_module</span><span class="p">));</span>
+<span class="c1">// The reference to the driver can be released now.</span>
+<span class="n">iree_hal_driver_release</span><span class="p">(</span><span class="n">driver</span><span class="p">);</span>
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The default <code>iree_allocator_system()</code> is backed by <code>malloc</code> and <code>free</code>,
+but custom allocators may also be used.</p>
+</div>
+<p>Load a <abbr title="VM FlatBuffer">vmfb</abbr> bytecode module containing program data:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// (Application-specific loading into memory, such as loading from a file)</span>
+
+<span class="n">iree_vm_module_t</span><span class="o">*</span> <span class="n">bytecode_module</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="n">IREE_CHECK_OK</span><span class="p">(</span><span class="n">iree_vm_bytecode_module_create</span><span class="p">(</span>
+    <span class="n">iree_const_byte_span_t</span><span class="p">{</span><span class="n">module_data</span><span class="p">,</span> <span class="n">module_size</span><span class="p">},</span>
+    <span class="cm">/*flatbuffer_allocator=*/</span><span class="n">iree_allocator_null</span><span class="p">(),</span>
+    <span class="cm">/*allocator=*/</span><span class="n">iree_allocator_system</span><span class="p">(),</span> <span class="o">&amp;</span><span class="n">bytecode_module</span><span class="p">));</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Many IREE samples use
+<a href="https://github.com/google/iree/tree/main/build_tools/embed_data"><code>c_embed_data</code></a>
+to embed <abbr title="VM FlatBuffer">vmfb</abbr> files as C code to avoid file I/O and ease portability.
+Applications should use what makes sense for their platforms and deployment
+configurations.</p>
+</div>
+<p>Create a VM context and load modules into it:</p>
+<div class="highlight"><pre><span></span><code><span class="n">iree_vm_context_t</span><span class="o">*</span> <span class="n">context</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="n">iree_vm_module_t</span><span class="o">*</span> <span class="n">modules</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">hal_module</span><span class="p">,</span> <span class="n">bytecode_module</span><span class="p">};</span>
+<span class="n">IREE_CHECK_OK</span><span class="p">(</span><span class="n">iree_vm_context_create_with_modules</span><span class="p">(</span>
+    <span class="n">instance</span><span class="p">,</span> <span class="n">modules</span><span class="p">,</span> <span class="n">IREE_ARRAYSIZE</span><span class="p">(</span><span class="n">modules</span><span class="p">),</span> <span class="n">iree_allocator_system</span><span class="p">(),</span>
+    <span class="o">&amp;</span><span class="n">context</span><span class="p">));</span>
+<span class="c1">// References to the modules can be released now.</span>
+<span class="n">iree_vm_module_release</span><span class="p">(</span><span class="n">hal_module</span><span class="p">);</span>
+<span class="n">iree_vm_module_release</span><span class="p">(</span><span class="n">bytecode_module</span><span class="p">);</span>
+</code></pre></div>
+<p>Look up the function(s) to call:</p>
+<div class="highlight"><pre><span></span><code><span class="n">iree_vm_function_t</span> <span class="n">main_function</span><span class="p">;</span>
+<span class="n">IREE_CHECK_OK</span><span class="p">(</span><span class="n">iree_vm_context_resolve_function</span><span class="p">(</span>
+    <span class="n">context</span><span class="p">,</span> <span class="n">iree_string_view_literal</span><span class="p">(</span><span class="s">&quot;module.main_function&quot;</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">main_function</span><span class="p">));</span>
+</code></pre></div>
+<h3 id="invoke-functions">Invoke functions<a class="headerlink" href="#invoke-functions" title="Permanent link">&para;</a></h3>
+<!-- TODO(scotttodd): I/O buffers (TODO pending new helpers) -->
+
+<div class="highlight"><pre><span></span><code><span class="c1">// (Application-specific I/O buffer setup, making data available to the device)</span>
+
+<span class="n">IREE_CHECK_OK</span><span class="p">(</span><span class="n">iree_vm_invoke</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">main_function</span><span class="p">,</span>
+                             <span class="cm">/*policy=*/</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span>
+                             <span class="n">iree_allocator_system</span><span class="p">()));</span>
+
+<span class="c1">// (Application-specific output buffer retrieval and reading back from the device)</span>
+</code></pre></div>
+<h3 id="cleanup-resources">Cleanup resources<a class="headerlink" href="#cleanup-resources" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">iree_hal_device_release</span><span class="p">(</span><span class="n">device</span><span class="p">);</span>
+<span class="n">iree_vm_context_release</span><span class="p">(</span><span class="n">context</span><span class="p">);</span>
+<span class="n">iree_vm_instance_release</span><span class="p">(</span><span class="n">instance</span><span class="p">);</span>
+</code></pre></div>
+<!-- ## Advanced usage -->
+
+<!-- TODO(scotttodd): async execution and synchronization -->
+<!-- TODO(scotttodd): specialized HAL APIs -->
+<!-- TODO(scotttodd): threadpools -->
+<!-- TODO(scotttodd): heterogenous execution -->
+
+<!-- ## Troubleshooting -->
+
+<!-- TODO(scotttodd): link to GitHub issues -->
+<!-- TODO(scotttodd): compiler/runtime compatibility -->
+<!-- TODO(scotttodd): common problems? object ownership? loaded modules (HAL)? -->
+
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>We are exploring adding a C API for IREE's compiler, see
+  <a href="https://github.com/google/iree/issues/3817">this GitHub issue</a>&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:2">
+<p>We plan on deploying via <a href="https://github.com/microsoft/vcpkg">vcpkg</a> in the
+  future too, see
+  <a href="https://github.com/google/iree/projects/18">this GitHub project</a>&#160;<a class="footnote-backref" href="#fnref:2" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
                 
               
               

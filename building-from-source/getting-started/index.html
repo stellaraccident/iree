@@ -731,6 +731,13 @@ git submodule update --init
 <div class="highlight"><pre><span></span><code>cmake -B ../iree-build/ .
 cmake --build ../iree-build/
 </code></pre></div>
+<details class="tip" open="open"><summary>Tip</summary><p>Most IREE Core devs use <a href="https://ninja-build.org/">Ninja</a> as the CMake
+generator. The benefit is that it works the same across all platforms and
+automatically takes advantage of parallelism. to use it, add a <code>-GNinja</code>
+argument to your initial cmake command (and make sure to install
+<code>ninja-build</code> from either your favorite OS package manager, or generically
+via <code>python -m pip install ninja</code>).</p>
+</details>
 <h2 id="whats-next">What's next?<a class="headerlink" href="#whats-next" title="Permanent link">&para;</a></h2>
 <!-- TODO(scotttodd): "at this point you can..." -->
 
