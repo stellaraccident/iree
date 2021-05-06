@@ -59,12 +59,12 @@ static BindingOptions getBindingOptionsFromFlags() {
       "iree-native-bindings-support",
       llvm::cl::desc(
           "Include runtime support for native IREE ABI-compatible bindings"),
-      llvm::cl::init(false), llvm::cl::cat(bindingOptionsCategory)};
+      llvm::cl::init(true), llvm::cl::cat(bindingOptionsCategory)};
 
   static llvm::cl::opt<bool> *bindingsSIPFlag = new llvm::cl::opt<bool>{
       "iree-sip-bindings-support",
       llvm::cl::desc("Include runtime support for SIP-compatible bindings"),
-      llvm::cl::init(true), llvm::cl::cat(bindingOptionsCategory)};
+      llvm::cl::init(false), llvm::cl::cat(bindingOptionsCategory)};
 
   static llvm::cl::opt<bool> *bindingsTFLiteFlag = new llvm::cl::opt<bool>{
       "iree-tflite-bindings-support",

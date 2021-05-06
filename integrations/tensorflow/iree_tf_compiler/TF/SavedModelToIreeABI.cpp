@@ -506,6 +506,10 @@ LogicalResult materializeABIWrapper(ModuleOp module, FuncOp internalFunc,
     refOut << refDictValue;
     refOut.flush();
     wrapperFunc->setAttr("iree.abi", builder.getStringAttr(refStr));
+
+    // Tag it as an IREE exported function.
+    // TODO: Remove this once no longer needed.
+    wrapperFunc->setAttr("iree.module.export", builder.getUnitAttr());
   }
 
   return success();
