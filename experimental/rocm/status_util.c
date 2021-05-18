@@ -16,8 +16,9 @@
 
 #include "experimental/rocm/dynamic_symbols.h"
 
-iree_status_t iree_hal_rocm_result_to_status(iree_hal_rocm_dynamic_symbols_t *syms, hipError_t result, const char *file,
-                                             uint32_t line) {
+iree_status_t iree_hal_rocm_result_to_status(
+    iree_hal_rocm_dynamic_symbols_t *syms, hipError_t result, const char *file,
+    uint32_t line) {
   if (IREE_LIKELY(result == hipSuccess)) {
     return iree_ok_status();
   }
@@ -31,5 +32,7 @@ iree_status_t iree_hal_rocm_result_to_status(iree_hal_rocm_dynamic_symbols_t *sy
   if (result == hipErrorUnknown) {
     error_string = "Unknown error.";
   }
-  return iree_make_status(IREE_STATUS_INTERNAL, "rocm driver error '%s' (%d): %s", error_name, result, error_string);
+  return iree_make_status(IREE_STATUS_INTERNAL,
+                          "rocm driver error '%s' (%d): %s", error_name, result,
+                          error_string);
 }

@@ -21,7 +21,8 @@
 extern "C" {
 #endif  // __cplusplus
 
-IREE_API_EXPORT iree_status_t iree_hal_rocm_driver_module_register(iree_hal_driver_registry_t *registry);
+IREE_API_EXPORT iree_status_t
+iree_hal_rocm_driver_module_register(iree_hal_driver_registry_t *registry);
 
 #ifdef __cplusplus
 }  // extern "C"

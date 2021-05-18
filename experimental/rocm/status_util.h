@@ -15,8 +15,8 @@
 #ifndef IREE_HAL_ROCM_STATUS_UTIL_H_
 #define IREE_HAL_ROCM_STATUS_UTIL_H_
 
-#include "iree/base/api.h"
 #include "experimental/rocm/dynamic_symbols.h"
+#include "iree/base/api.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,20 +34,24 @@ extern "C" {
 //
 // Usage:
 //   ROCM_RETURN_IF_ERROR(rocmDoThing(...), "message");
-#define ROCM_RETURN_IF_ERROR(syms, expr, ...) \
-  IREE_RETURN_IF_ERROR(iree_hal_rocm_result_to_status((syms), ((syms)->expr), __FILE__, __LINE__), __VA_ARGS__)
+#define ROCM_RETURN_IF_ERROR(syms, expr, ...)                                 \
+  IREE_RETURN_IF_ERROR(iree_hal_rocm_result_to_status((syms), ((syms)->expr), \
+                                                      __FILE__, __LINE__),    \
+                       __VA_ARGS__)
 
 // IREE_IGNORE_ERROR but implicitly converts the hipError_t return value to a
 // Status.
 //
 // Usage:
 //   ROCM_IGNORE_ERROR(rocmDoThing(...));
-#define ROCM_IGNORE_ERROR(syms, expr) \
-  IREE_IGNORE_ERROR(iree_hal_rocm_result_to_status((syms), ((syms)->expr), __FILE__, __LINE__))
+#define ROCM_IGNORE_ERROR(syms, expr)                                      \
+  IREE_IGNORE_ERROR(iree_hal_rocm_result_to_status((syms), ((syms)->expr), \
+                                                   __FILE__, __LINE__))
 
 // Converts a hipError_t to a Status object.
-iree_status_t iree_hal_rocm_result_to_status(iree_hal_rocm_dynamic_symbols_t *syms, hipError_t result, const char *file,
-                                             uint32_t line);
+iree_status_t iree_hal_rocm_result_to_status(
+    iree_hal_rocm_dynamic_symbols_t *syms, hipError_t result, const char *file,
+    uint32_t line);
 
 #ifdef __cplusplus
 }  // extern "C"

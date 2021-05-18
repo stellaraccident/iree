@@ -15,9 +15,9 @@
 #ifndef IREE_HAL_ROCM_CONTEXT_WRAPPER_H_
 #define IREE_HAL_ROCM_CONTEXT_WRAPPER_H_
 
-#include "iree/hal/api.h"
 #include "experimental/rocm/dynamic_symbols.h"
 #include "experimental/rocm/rocm_headers.h"
+#include "iree/hal/api.h"
 
 // Structure to wrap all objects constant within a context. This makes it
 // simpler to pass it to the different objects and saves memory.

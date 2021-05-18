@@ -14,8 +14,8 @@
 
 #include "experimental/rocm/rocm_event.h"
 
-#include "iree/base/tracing.h"
 #include "experimental/rocm/status_util.h"
+#include "iree/base/tracing.h"
 
 // Dummy events for now, don't do anything.
 typedef struct {
@@ -25,20 +25,23 @@ typedef struct {
 
 extern const iree_hal_event_vtable_t iree_hal_rocm_event_vtable;
 
-static iree_hal_rocm_event_t *iree_hal_rocm_event_cast(iree_hal_event_t *base_value) {
+static iree_hal_rocm_event_t *iree_hal_rocm_event_cast(
+    iree_hal_event_t *base_value) {
   IREE_HAL_ASSERT_TYPE(base_value, &iree_hal_rocm_event_vtable);
   return (iree_hal_rocm_event_t *)base_value;
 }
 
-iree_status_t iree_hal_rocm_event_create(iree_hal_rocm_context_wrapper_t *context_wrapper,
-                                         iree_hal_event_t **out_event) {
+iree_status_t iree_hal_rocm_event_create(
+    iree_hal_rocm_context_wrapper_t *context_wrapper,
+    iree_hal_event_t **out_event) {
   IREE_ASSERT_ARGUMENT(context_wrapper);
   IREE_ASSERT_ARGUMENT(out_event);
   *out_event = NULL;
   IREE_TRACE_ZONE_BEGIN(z0);
 
   iree_hal_rocm_event_t *event = NULL;
-  iree_status_t status = iree_allocator_malloc(context_wrapper->host_allocator, sizeof(*event), (void **)&event);
+  iree_status_t status = iree_allocator_malloc(context_wrapper->host_allocator,
+                                               sizeof(*event), (void **)&event);
   if (iree_status_is_ok(status)) {
     iree_hal_resource_initialize(&iree_hal_rocm_event_vtable, &event->resource);
     event->context_wrapper = context_wrapper;
@@ -60,5 +63,5 @@ static void iree_hal_rocm_event_destroy(iree_hal_event_t *base_event) {
 }
 
 const iree_hal_event_vtable_t iree_hal_rocm_event_vtable = {
-  .destroy = iree_hal_rocm_event_destroy,
+    .destroy = iree_hal_rocm_event_destroy,
 };

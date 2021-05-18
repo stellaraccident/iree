@@ -15,18 +15,19 @@
 #ifndef IREE_HAL_ROCM_DESCRIPTOR_SET_LAYOUT_H_
 #define IREE_HAL_ROCM_DESCRIPTOR_SET_LAYOUT_H_
 
-#include "iree/hal/api.h"
 #include "experimental/rocm/context_wrapper.h"
+#include "iree/hal/api.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
 
-iree_status_t iree_hal_rocm_descriptor_set_layout_create(iree_hal_rocm_context_wrapper_t *context,
-                                                         iree_hal_descriptor_set_layout_usage_type_t usage_type,
-                                                         iree_host_size_t binding_count,
-                                                         const iree_hal_descriptor_set_layout_binding_t *bindings,
-                                                         iree_hal_descriptor_set_layout_t **out_descriptor_set_layout);
+iree_status_t iree_hal_rocm_descriptor_set_layout_create(
+    iree_hal_rocm_context_wrapper_t *context,
+    iree_hal_descriptor_set_layout_usage_type_t usage_type,
+    iree_host_size_t binding_count,
+    const iree_hal_descriptor_set_layout_binding_t *bindings,
+    iree_hal_descriptor_set_layout_t **out_descriptor_set_layout);
 
 #ifdef __cplusplus
 }  // extern "C"

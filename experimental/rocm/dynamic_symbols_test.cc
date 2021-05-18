@@ -30,7 +30,8 @@ namespace {
 
 TEST(DynamicSymbolsTest, CreateFromSystemLoader) {
   iree_hal_rocm_dynamic_symbols_t symbols;
-  iree_status_t status = iree_hal_rocm_dynamic_symbols_initialize(iree_allocator_system(), &symbols);
+  iree_status_t status = iree_hal_rocm_dynamic_symbols_initialize(
+      iree_allocator_system(), &symbols);
   if (!iree_status_is_ok(status)) {
     IREE_LOG(WARNING) << "Symbols cannot be loaded, skipping test.";
     GTEST_SKIP();

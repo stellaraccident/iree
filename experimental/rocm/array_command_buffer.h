@@ -15,10 +15,10 @@
 #ifndef IREE_HAL_ROCM_ARRAY_COMMAND_BUFFER_H_
 #define IREE_HAL_ROCM_ARRAY_COMMAND_BUFFER_H_
 
-#include "iree/hal/api.h"
 #include "experimental/rocm/context_wrapper.h"
 #include "experimental/rocm/dynamic_symbols.h"
 #include "experimental/rocm/rocm_headers.h"
+#include "iree/hal/api.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,14 +43,16 @@ typedef struct {
 } kernelArrayType;
 
 // Creates a rocm array.
-iree_status_t iree_hal_rocm_array_command_buffer_allocate(iree_hal_rocm_context_wrapper_t *context,
-                                                          iree_hal_command_buffer_mode_t mode,
-                                                          iree_hal_command_category_t command_categories,
-                                                          iree_hal_queue_affinity_t queue_affinity,
-                                                          iree_hal_command_buffer_t **out_command_buffer);
+iree_status_t iree_hal_rocm_array_command_buffer_allocate(
+    iree_hal_rocm_context_wrapper_t *context,
+    iree_hal_command_buffer_mode_t mode,
+    iree_hal_command_category_t command_categories,
+    iree_hal_queue_affinity_t queue_affinity,
+    iree_hal_command_buffer_t **out_command_buffer);
 
 // Returns the array of kernel associated to the command buffer.
-kernelArrayType *iree_hal_rocm_array_command_buffer_exec(const iree_hal_command_buffer_t *command_buffer);
+kernelArrayType *iree_hal_rocm_array_command_buffer_exec(
+    const iree_hal_command_buffer_t *command_buffer);
 
 #ifdef __cplusplus
 }  // extern "C"

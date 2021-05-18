@@ -15,8 +15,8 @@
 #ifndef IREE_HAL_ROCM_NOP_EXECUTABLE_CACHE_H_
 #define IREE_HAL_ROCM_NOP_EXECUTABLE_CACHE_H_
 
-#include "iree/hal/api.h"
 #include "experimental/rocm/context_wrapper.h"
+#include "iree/hal/api.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,9 +25,9 @@ extern "C" {
 // Creates a no-op executable cache that does not cache at all.
 // This is useful to isolate pipeline caching behavior and verify compilation
 // behavior.
-iree_status_t iree_hal_rocm_nop_executable_cache_create(iree_hal_rocm_context_wrapper_t *context,
-                                                        iree_string_view_t identifier,
-                                                        iree_hal_executable_cache_t **out_executable_cache);
+iree_status_t iree_hal_rocm_nop_executable_cache_create(
+    iree_hal_rocm_context_wrapper_t *context, iree_string_view_t identifier,
+    iree_hal_executable_cache_t **out_executable_cache);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -35,15 +35,16 @@ typedef struct {
   int default_device_index;
 } iree_hal_rocm_driver_options_t;
 
-IREE_API_EXPORT void iree_hal_rocm_driver_options_initialize(iree_hal_rocm_driver_options_t *out_options);
+IREE_API_EXPORT void iree_hal_rocm_driver_options_initialize(
+    iree_hal_rocm_driver_options_t *out_options);
 
 // Creates a ROCM HAL driver that manage its own hipcontext.
 //
 // |out_driver| must be released by the caller (see |iree_hal_driver_release|).
-IREE_API_EXPORT iree_status_t iree_hal_rocm_driver_create(iree_string_view_t identifier,
-                                                                        const iree_hal_rocm_driver_options_t *options,
-                                                                        iree_allocator_t host_allocator,
-                                                                        iree_hal_driver_t **out_driver);
+IREE_API_EXPORT iree_status_t iree_hal_rocm_driver_create(
+    iree_string_view_t identifier,
+    const iree_hal_rocm_driver_options_t *options,
+    iree_allocator_t host_allocator, iree_hal_driver_t **out_driver);
 
 // TODO(thomasraoux): Support importing a CUcontext from app.
 
