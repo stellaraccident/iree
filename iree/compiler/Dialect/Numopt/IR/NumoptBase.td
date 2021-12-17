@@ -1,0 +1,25 @@
+// Copyright 2021 The IREE Authors
+//
+// Licensed under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#ifndef IREE_DIALECT_NUMOPT_IR_NUMOPT_BASE
+#define IREE_DIALECT_NUMOPT_IR_NUMOPT_BASE
+
+include "mlir/IR/OpBase.td"
+
+//===----------------------------------------------------------------------===//
+// Dialect for IR and transforms for numerical optimizations
+//===----------------------------------------------------------------------===//
+
+def Numopt_Dialect : Dialect {
+  let name = "numopt";
+  let cppNamespace = "::mlir::iree_compiler::IREE::Numopt";
+
+  let summary = [{
+    Dialect for IR and transforms for numerical optimizations.
+  }];
+}
+
+#endif // IREE_DIALECT_NUMOPT_IR_NUMOPT_BASE
