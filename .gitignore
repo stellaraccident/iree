@@ -1,4 +1,8 @@
+*.venv
 tf-user.bazelrc
 bazel-*
 # TODO: Add in-tree copy of iree-dialects. Currently requires symlink.
 iree-dialects
+*.egg-info
+__pycache__
+.vscode/

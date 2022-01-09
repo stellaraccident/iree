@@ -19,6 +19,12 @@ TensorFlow XLA Compiler Tools
 '''
 
 exe_suffix = ".exe" if platform.system() == "Windows" else ""
+import_xla_path = os.path.join(os.path.dirname(__file__), "iree", "tools",
+                               "xla", f"iree-import-xla{exe_suffix}")
+if not os.access(import_xla_path, os.X_OK):
+  raise RuntimeError(
+      f"Tool not found ({import_xla_path}). Be sure to build "
+      f"//iree_tf_compiler:iree-import-xla and run ./symlink_binaries.sh")
 
 # Force platform specific wheel.
 # https://stackoverflow.com/questions/45150304
@@ -54,8 +60,8 @@ class platlib_install(install):
 
 
 setup(
-    name="iree-tools-xla@IREE_RELEASE_PACKAGE_SUFFIX@",
-    version="@IREE_RELEASE_VERSION@",
+    name="iree-tools-xla",
+    version="0.1",
     author="The IREE Team",
     author_email="iree-discuss@googlegroups.com",
     license="Apache",
@@ -71,8 +77,8 @@ setup(
     ],
     python_requires=">=3.7",
     packages=find_namespace_packages(include=[
-      "iree.tools.xla",
-      "iree.tools.xla.*",
+        "iree.tools.xla",
+        "iree.tools.xla.*",
     ]),
     package_data={
         "iree.tools.xla": [f"iree-import-xla{exe_suffix}",],

@@ -19,6 +19,12 @@ TensorFlow TFLite Compiler Tools
 '''
 
 exe_suffix = ".exe" if platform.system() == "Windows" else ""
+import_tflite_path = os.path.join(os.path.dirname(__file__), "iree", "tools",
+                                  "tflite", f"iree-import-tflite{exe_suffix}")
+if not os.access(import_tflite_path, os.X_OK):
+  raise RuntimeError(
+      f"Tool not found ({import_tflite_path}). Be sure to build "
+      f"//iree_tf_compiler:iree-import-tflite and run ./symlink_binaries.sh")
 
 # Force platform specific wheel.
 # https://stackoverflow.com/questions/45150304
@@ -71,8 +77,8 @@ setup(
     ],
     python_requires=">=3.7",
     packages=find_namespace_packages(include=[
-      "iree.tools.tflite",
-      "iree.tools.tflite.*",
+        "iree.tools.tflite",
+        "iree.tools.tflite.*",
     ]),
     package_data={
         "iree.tools.tflite": [f"iree-import-tflite{exe_suffix}",],
