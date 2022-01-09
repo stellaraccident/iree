@@ -54,8 +54,8 @@ class platlib_install(install):
 
 
 setup(
-    name="iree-tools-tflite@IREE_RELEASE_PACKAGE_SUFFIX@",
-    version="@IREE_RELEASE_VERSION@",
+    name="iree-tools-tflite",
+    version="0.1",
     author="The IREE Team",
     author_email="iree-discuss@googlegroups.com",
     license="Apache",
