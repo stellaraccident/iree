@@ -10,11 +10,8 @@
 try-import %workspace%/build_tools/bazel/iree-tf.bazelrc
 
 # Run the configure_bazel.py script to generate.
-try-import %workspace%/../../configured.bazelrc
+try-import %workspace%/configured.bazelrc
 
 # The user.bazelrc file is not checked in but available for local mods.
 # Always keep this at the end of the file so that user flags override.
-try-import %workspace%/../../user.bazelrc
-
-# Include settings from the integrations/tensorflow directory too.
-try-import %workspace%/tf-user.bazelrc
+try-import %workspace%/user.bazelrc

@@ -1,0 +1,6 @@
+# TODO: Find where the configure_bazel.py script went.
+build --action_env CC="clang"
+build --action_env CXX="clang"
+build --config=generic_clang
+build:release --config=generic_clang_release
+common --config=non_darwin
