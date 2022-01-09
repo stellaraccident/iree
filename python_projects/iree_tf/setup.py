@@ -15,7 +15,7 @@ import platform
 from setuptools import setup, find_namespace_packages
 
 README = r'''
-TensorFlow XLA Compiler Tools
+TensorFlow TF Compiler Tools
 '''
 
 exe_suffix = ".exe" if platform.system() == "Windows" else ""
@@ -54,8 +54,8 @@ class platlib_install(install):
 
 
 setup(
-    name="iree-tools-tf@IREE_RELEASE_PACKAGE_SUFFIX@",
-    version="@IREE_RELEASE_VERSION@",
+    name="iree-tools-tf",
+    version="0.1",
     author="The IREE Team",
     author_email="iree-discuss@googlegroups.com",
     license="Apache",
