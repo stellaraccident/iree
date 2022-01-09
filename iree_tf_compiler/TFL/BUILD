@@ -47,6 +47,8 @@ cc_library(
     ],
     deps = [
         ":PassesIncGen",
+        "//iree_tf_compiler/Utils",
+        "//iree-dialects:IREEInputDialect",
         "@llvm-project//llvm:Support",
         "@llvm-project//mlir:IR",
         "@llvm-project//mlir:Pass",
