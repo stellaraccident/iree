@@ -1,0 +1,12 @@
+# Copyright 2021 The IREE Authors
+#
+# Licensed under the Apache License v2.0 with LLVM Exceptions.
+# See https://llvm.org/LICENSE.txt for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+# For now, just import the main IREE bazelrc
+try-import %workspace%/../../build_tools/bazel/iree.bazelrc
+
+# Ignore visibility issues in TensorFlow. They are inconsistently applied
+# to the OSS codebase.
+build --nocheck_visibility

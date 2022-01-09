@@ -1,0 +1,47 @@
+# Copyright 2021 The IREE Authors
+#
+# Licensed under the Apache License v2.0 with LLVM Exceptions.
+# See https://llvm.org/LICENSE.txt for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+package(
+    default_visibility = ["//visibility:public"],
+    features = ["layering_check"],
+    licenses = ["notice"],  # Apache 2.0
+)
+
+cc_library(
+    name = "MHLO",
+    srcs = [
+        "EmitDefaultIREEABI.cpp",
+        "Passes.cpp",
+    ],
+    hdrs = [
+        "Passes.h",
+    ],
+    defines = [
+        "IREE_COMPILER_TENSORFLOW_ENABLED",
+    ],
+    deps = [
+        "@iree//iree/compiler/Codegen:PassHeaders",
+        "@iree//iree/compiler/Dialect/Flow/IR",
+        "@iree//iree/compiler/Dialect/Flow/Transforms",
+        "@iree//iree/compiler/Dialect/Util/IR",
+        "@iree//iree/compiler/InputConversion/MHLO",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Pass",
+        "@llvm-project//mlir:SCFToStandard",
+        "@llvm-project//mlir:SCFTransforms",
+        "@llvm-project//mlir:Shape",
+        "@llvm-project//mlir:ShapeTransforms",
+        "@llvm-project//mlir:StandardOps",
+        "@llvm-project//mlir:Support",
+        "@llvm-project//mlir:TensorDialect",
+        "@llvm-project//mlir:TransformUtils",
+        "@org_tensorflow//tensorflow/compiler/mlir/hlo",
+        "@org_tensorflow//tensorflow/compiler/mlir/hlo:all_passes",
+        "@org_tensorflow//tensorflow/compiler/mlir/hlo:chlo_legalize_to_hlo",
+        "@org_tensorflow//tensorflow/compiler/mlir/hlo:mhlo_to_mhlo_lowering_patterns",
+    ],
+)
