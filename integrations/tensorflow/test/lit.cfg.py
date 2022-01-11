@@ -17,6 +17,7 @@ lit.llvm.initialize(lit_config, config)
 from lit.llvm import llvm_config
 
 llvm_config.with_system_environment("PYTHONPATH")
+llvm_config.with_system_environment("VK_ICD_FILENAMES")
 
 # name: The name of this test suite.
 config.name = 'TENSORFLOW_TESTS'
