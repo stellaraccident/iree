@@ -44,10 +44,11 @@ def main(args):
 
 
 def transform_src_file_spec_to_src_file(spec: str):
-  colon_pos = spec.index(":")
-  if colon_pos > -1:
-    return spec[0:colon_pos]
-  return spec
+  try:
+    colon_pos = spec.index(":")
+  except ValueError:
+    return spec
+  return spec[0:colon_pos]
 
 
 def transform_src_file_to_module(file_name):
@@ -62,7 +63,11 @@ def transform_src_file_spec_to_run_file(spec, variant):
   # specified.
   file_path = spec
   file_name = os.path.basename(file_path)
-  colon_pos = spec.index(":")
+  colon_pos = -1
+  try:
+    colon_pos = spec.index(":")
+  except ValueError:
+    pass
   if colon_pos > -1:
     # Explicit alias.
     file_path = spec[0:colon_pos]
