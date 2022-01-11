@@ -6,15 +6,6 @@ formats.
 ## Quick Development Setup
 
 This assumes that you have an appropriate `bazel` installed.
-
-TODO: Remove the need for these symlinks by copying iree-dialects in tree
-and switching to sha-hash based tensorflow loading.
-
-```
-ln -s $IREE_DIR/llvm-external-projects/iree-dialects .
-ln -s $IREE_DIR/third_party/tensorflow third_party/
-```
-
 Build the importer binaries:
 
 ```
@@ -48,3 +39,22 @@ iree-import-tflite -help
 iree-import-xla -help
 iree-import-tf -help
 ```
+
+## Run test suite
+
+You need to make sure that the iree compiler and runtime are on your PYTHONPATH.
+The easiest way to do this is to install wheels with pip. For development,
+the following should do it:
+
+```
+source ~/path/to/iree-build/.env && export PYTHONPATH
+```
+
+Run the test suite with:
+
+```
+lit -v test/
+```
+
+Note that you can specify arbitrary sub-directories or individual files/globs
+as needed.
