@@ -7,6 +7,14 @@ formats.
 
 This assumes that you have an appropriate `bazel` installed.
 
+TODO: Remove the need for these symlinks by copying iree-dialects in tree
+and switching to sha-hash based tensorflow loading.
+
+```
+ln -s $IREE_DIR/llvm-external-projects/iree-dialects .
+ln -s $IREE_DIR/third_party/tensorflow third_party/
+```
+
 Build the importer binaries:
 
 ```
@@ -19,9 +27,24 @@ bazel build iree_tf_compiler:iree-import-xla
 bazel build iree_tf_compiler:iree-import-tf
 ```
 
-## Notes:
+Symlink binaries into python packages (only needs to be done once):
 
-This directory is in a transitional state to its own project. Currently it
-has its directory structure set up for that eventuality. Specifically,
-`iree-dialects` is a symlink to the directory from the main repo. When split,
-this will be a copy.
+```
+./symlink_binaries.sh
+```
+
+Pip install editable (recommend to do this in a virtual environment):
+
+```
+pip install -e python_projects/iree_tflite
+pip install -e python_projects/iree_xla
+pip install -e python_projects/iree_tf
+```
+
+Test installed:
+
+```
+iree-import-tflite -help
+iree-import-xla -help
+iree-import-tf -help
+```
