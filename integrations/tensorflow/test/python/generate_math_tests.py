@@ -190,6 +190,7 @@ COMPLEX_FUNCTIONS = [
 
 BACKENDS = [
     ("llvmaot", "--target_backends=iree_llvmaot"),
+    ("vulkan", "--target_backends=iree_vulkan"),
 ]
 
 # Non dynamic dim tests.

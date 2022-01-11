@@ -146,6 +146,7 @@ LAYERS_WITH_TRAINING_BEHAVIOR = [
 
 BACKENDS = [
     ("llvmaot", "--target_backends=iree_llvmaot"),
+    ("vulkan", "--target_backends=iree_vulkan"),
 ]
 
 # Non dynamic dim tests.
