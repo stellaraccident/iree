@@ -125,6 +125,25 @@ LAYERS_WITH_FULL_API_TESTS = [
     # "SimpleRNN",  # TODO(meadowlark): Debug flakiness.
 ]
 
+# Layers that mention a training kwarg in their doc.
+LAYERS_WITH_TRAINING_BEHAVIOR = [
+    "AdditiveAttention",
+    "AlphaDropout",
+    "Attention",
+    "BatchNormalization",
+    # "ConvLSTM2D",  # TODO(meadowlark): Debug flakiness.
+    "Dropout",
+    "GRU",
+    "GaussianDropout",
+    "GaussianNoise",
+    "LSTM",
+    "MultiHeadAttention",
+    # "SimpleRNN",  # TODO(meadowlark): Debug flakiness.
+    "SpatialDropout1D",
+    "SpatialDropout2D",
+    "SpatialDropout3D",
+]
+
 BACKENDS = [
     ("llvmaot", "--target_backends=iree_llvmaot"),
 ]
@@ -132,11 +151,19 @@ BACKENDS = [
 # Non dynamic dim tests.
 for variant, flags in BACKENDS:
   for layer in LAYERS:
+    # Static.
     generate_runner.main([
         variant,
         (f"{flags} --dynamic_dims=false --training=false "
          f"--test_default_kwargs_only=true --layer={layer}"),
         f"iree_tf_tests/layers/layers_test.py:{layer}"
+    ])
+    # Dynamic.
+    generate_runner.main([
+        variant,
+        (f"{flags} --dynamic_dims=true --training=false "
+         f"--test_default_kwargs_only=true --layer={layer}"),
+        f"iree_tf_tests/layers/layers_test.py:dynamic_dims_{layer}"
     ])
 
   # Test with test_default_kwargs_only=false
@@ -146,4 +173,13 @@ for variant, flags in BACKENDS:
         (f"{flags} --dynamic_dims=false --training=false "
          f"--test_default_kwargs_only=false --layer={layer}"),
         f"iree_tf_tests/layers/layers_test.py:full_api_{layer}"
+    ])
+
+  # Test with training flags.
+  for layer in LAYERS_WITH_TRAINING_BEHAVIOR:
+    generate_runner.main([
+        variant,
+        (f"{flags} --dynamic_dims=false --training=true "
+         f"--test_default_kwargs_only=true --layer={layer}"),
+        f"iree_tf_tests/layers/layers_test.py:training_{layer}"
     ])
