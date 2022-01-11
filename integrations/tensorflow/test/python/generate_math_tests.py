@@ -141,9 +141,18 @@ BACKENDS = [
     ("llvmaot", "--target_backends=iree_llvmaot"),
 ]
 
+# Non dynamic dim tests.
 for variant, flags in BACKENDS:
   for math_fn in TF_MATH_FUNCTIONS:
     generate_runner.main([
         variant, f"{flags} --dynamic_dims=false --functions={math_fn}",
         f"iree_tf_tests/math/math_test.py:{math_fn}"
+    ])
+
+# Dynamic dim tests.
+for variant, flags in BACKENDS:
+  for math_fn in TF_MATH_FUNCTIONS:
+    generate_runner.main([
+        variant, f"{flags} --dynamic_dims=true --functions={math_fn}",
+        f"iree_tf_tests/math/math_test.py:dynamic_dim_{math_fn}"
     ])
