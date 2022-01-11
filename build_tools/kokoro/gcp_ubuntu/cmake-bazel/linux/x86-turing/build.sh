@@ -88,7 +88,15 @@ then
    tests_passed=false
 fi
 
-# TODO: Enable TensorFlow vulkan integrations feature (and disable CPU).
+echo "***** Running TensorFlow integration tests *****"
+cd "$IREE_SRC_DIR"
+LIT_SCRIPT="$IREE_SRC_DIR/third_party/llvm-project/llvm/utils/lit/lit.py"
+if ! python3 "$LIT_SCRIPT" integrations/tensorflow/test \
+   -D DISABLE_FEATURES=llvmaot \
+   -D FEATURES=vulkan
+then
+   tests_passed=false
+fi
 
 if ! $tests_passed; then
    echo "Some tests failed!!!"

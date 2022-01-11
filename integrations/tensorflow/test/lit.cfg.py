@@ -55,8 +55,13 @@ llvm_config.with_environment("PYTHONPATH", [
 
 # Enable features based on -D FEATURES=hugetest,vulkan
 # syntax.
-# We always allow 'llvmaot'.
-config.available_features.add("llvmaot")
+# We always allow 'llvmaot'. It can be disabled with -D DISABLE_FEATURES=llvmaot
+disable_features_param = lit_config.params.get('DISABLE_FEATURES')
+disable_features = []
+if disable_features_param:
+    disable_features = disable_features_param.split(',')
+if 'llvmaot' not in disable_features:
+    config.available_features.add('llvmaot')
 features_param = lit_config.params.get('FEATURES')
 if features_param:
   config.available_features.update(features_param.split(','))
