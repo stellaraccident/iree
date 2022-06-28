@@ -456,8 +456,9 @@ void addTileFuseAndVectorizePassPipeline(OpPassManager &passManager,
   nestedModulePM.addNestedPass<func::FuncOp>(createCSEPass());
   nestedModulePM.addNestedPass<func::FuncOp>(createCanonicalizerPass());
 
-  nestedModulePM.addNestedPass<func::FuncOp>(
-      createLLVMCPUAArch64VectorLoweringPass());
+  // TODO: This produces ~300k instructions for vmvx !?
+  // nestedModulePM.addNestedPass<func::FuncOp>(
+  //     createLLVMCPUAArch64VectorLoweringPass());
   nestedModulePM.addNestedPass<func::FuncOp>(
       createOptimizeVectorTransferPass());
 }

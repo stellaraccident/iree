@@ -178,13 +178,16 @@ void LLVMCPULowerExecutableTargetPass::runOnOperation() {
         return signalPassFailure();
       }
 
-      bool lowerToVectors = !isVMVXBackend(variantOp);
+      //bool lowerToVectors = !isVMVXBackend(variantOp);
+      bool lowerToVectors = true;
       bool lowerToAVX2 = hasAVX2Feature(variantOp);
       if (!testLoweringConfiguration) {
         switch (translationInfo.getValue().getDispatchLoweringPassPipeline()) {
           case IREE::Codegen::DispatchLoweringPassPipeline::CPUDefault:
           case IREE::Codegen::DispatchLoweringPassPipeline::None:
-            addCPUDefaultPassPipeline(executableLoweringPipeline);
+            addTileFuseAndVectorizePassPipeline(executableLoweringPipeline,
+                                                lowerToVectors);
+            // addCPUDefaultPassPipeline(executableLoweringPipeline);
             break;
           case IREE::Codegen::DispatchLoweringPassPipeline::
               CPUBufferOpsTileAndVectorize:
