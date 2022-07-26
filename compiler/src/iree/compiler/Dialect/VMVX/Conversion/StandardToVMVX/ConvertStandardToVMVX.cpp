@@ -63,8 +63,16 @@ struct RemoveIdentityConversionCast final
 }  // namespace
 
 void populateStandardToVMVXPatterns(MLIRContext *context,
+                                    ConversionTarget &conversionTarget,
                                     RewritePatternSet &patterns,
                                     TypeConverter &typeConverter) {
+  // conversionTarget.addDynamicallyLegalOp<UnrealizedConversionCastOp>(
+  //     [&](UnrealizedConversionCastOp op) {
+  //       return llvm::all_of(op.getOperandTypes(), [&](Type t) {
+  //         return typeConverter.isLegal(t);
+  //       });
+  //     });
+  conversionTarget.addIllegalOp<UnrealizedConversionCastOp>();
   // We type/shape erase memrefs as we lower so there is no need for reshapes.
   patterns.insert<FoldAsNoOp<memref::CollapseShapeOp>>(typeConverter, context);
   patterns.insert<FoldAsNoOp<memref::ExpandShapeOp>>(typeConverter, context);

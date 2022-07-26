@@ -66,12 +66,17 @@ void leftPadToRank(Location loc, SmallVectorImpl<Value> &indices,
   }
 }
 
-struct StridedBufferDescriptor {
+struct BaseBufferAndOffset {
+  Value baseBuffer;
+  Value offset;
+};
+
+class StridedBufferDescriptor {
+ public:
   // The base buffer, corresponding to a row-major, contiguous memory layout.
   Value baseBuffer;
 
   // Size/offset/strides of the buffer.
-  Value offset;
   SmallVector<Value> sizes;
   SmallVector<Value> strides;
 
@@ -97,34 +102,29 @@ struct StridedBufferDescriptor {
     return stride.getZExtValue() == 1;
   }
 
-  /// Casts the memref to a memref<?x...> that is safe for linear access
-  /// with element-based addressing.
-  Value castToLinear(Location loc, OpBuilder &builder) {
-    BaseMemRefType sourceType = baseBuffer.getType().cast<MemRefType>();
-    if (sourceType.getRank() == 1) return baseBuffer;
-
-    // Insert the cast just after the original def to keep inner loops tidy.
-    OpBuilder::InsertionGuard restoreIp(builder);
-    Operation *def = baseBuffer.getDefiningOp();
-    if (def) builder.setInsertionPointAfter(def);
-
-    if (sourceType.getRank() > 1) {
-      // Collapse to 1D.
-      ReassociationIndices reassociation;
-      reassociation.resize(sourceType.getRank());
-      for (int i = 0; i < sourceType.getRank(); ++i) {
-        reassociation[i] = i;
-      }
-      return builder.create<memref::CollapseShapeOp>(loc, baseBuffer,
-                                                     reassociation);
-    } else {
-      // Expand 0D to 1D.
-      // ReassociationIndices reassociation;
-      return builder.create<memref::ExpandShapeOp>(
-          loc, MemRefType::get({1}, sourceType.getElementType()), baseBuffer,
-          ArrayRef<ReassociationIndices>{});
-    }
+  /// Casts the memref to a (!util.buffer, index) pair representing the base
+  /// buffer and computed (element-wise) offset into the buffer.
+  BaseBufferAndOffset castToLinear(Location loc, OpBuilder &builder) {
+    OpBuilder::InsertionGuard guard(builder);
+    builder.setInsertionPointAfterValue(baseBuffer);
+    auto bufferType = builder.getType<IREE::Util::BufferType>();
+    // HACK: By separating from the memref space via a conversion cast, we
+    // signal to the flattener that it is to not care about this.
+    Value castedBaseBuffer =
+        builder.create<UnrealizedConversionCastOp>(loc, bufferType, baseBuffer)
+            .getResult(0);
+    Value elementSize = builder.create<IREE::Util::SizeOfOp>(
+        loc, baseBuffer.getType().cast<MemRefType>().getElementType());
+    auto op = builder.create<IREE::VMVX::ResolveBufferOp>(
+        loc, bufferType, builder.getIndexType(), castedBaseBuffer, offset,
+        elementSize);
+    return BaseBufferAndOffset{op.getBaseBuffer(), op.getAdjustedOffset()};
   }
+
+ private:
+  // Offset can only be accessed through castToLinear.
+  Value offset;
+  friend class StridedBufferAnalysis;
 };
 
 /// Holds the results of an analysis which indicates whether a given memref
@@ -387,9 +387,9 @@ struct BinaryEmitter {
     SmallVector<Value> in1Strides;
     SmallVector<Value> outStrides;
     SmallVector<Value> sizes;
-    Value in0Buffer;
-    Value in1Buffer;
-    Value outBuffer;
+    BaseBufferAndOffset in0Buffer;
+    BaseBufferAndOffset in1Buffer;
+    BaseBufferAndOffset outBuffer;
   };
 
   void emit(Location loc, OpType opType, PatternRewriter &rewriter) {
@@ -430,11 +430,11 @@ struct BinaryEmitter {
     rewriter.create<OpTy>(
         loc,
         // LHS
-        params.in0Buffer, operands.first.bufferDesc->offset, params.in0Strides,
+        params.in0Buffer.baseBuffer, params.in0Buffer.offset, params.in0Strides,
         // RHS
-        params.in1Buffer, operands.second.bufferDesc->offset, params.in1Strides,
+        params.in1Buffer.baseBuffer, params.in1Buffer.offset, params.in1Strides,
         // OUT
-        params.outBuffer, result.bufferDesc->offset, params.outStrides,
+        params.outBuffer.baseBuffer, params.outBuffer.offset, params.outStrides,
         // Sizes
         params.sizes,
         // Attributes
@@ -522,9 +522,9 @@ struct CopyEmitter {
     rewriter.create<IREE::VMVX::CopyOp>(
         loc,
         // IN
-        inBuffer, in.bufferDesc->offset, inStrides,
+        inBuffer.baseBuffer, inBuffer.offset, inStrides,
         // OUT
-        outBuffer, out.bufferDesc->offset, outStrides,
+        outBuffer.baseBuffer, outBuffer.offset, outStrides,
         // Sizes
         sizes,
         // Element type.
@@ -668,10 +668,11 @@ struct LinalgFillConversion : public OpRewritePattern<linalg::FillOp> {
     Value m = outDesc.sizes[0];
     Value n = outDesc.sizes[1];
     Value stride = outDesc.strides[0];
-    Value outBuffer = outDesc.castToLinear(loc, rewriter);
+    auto outBuffer = outDesc.castToLinear(loc, rewriter);
 
     rewriter.replaceOpWithNewOp<IREE::VMVX::Fill2DOp>(
-        info.op, info.scalar, outBuffer, outDesc.offset, stride, m, n);
+        info.op, info.scalar, outBuffer.baseBuffer, outBuffer.offset, stride, m,
+        n);
     return success();
   }
 };
@@ -787,11 +788,11 @@ struct LinalgMatmulConversion
     rewriter.replaceOpWithNewOp<IREE::VMVX::MatmulOp>(
         info.op,
         // LHS
-        lhsBuffer, lhsDesc.offset, lhsDesc.strides[0],
+        lhsBuffer.baseBuffer, lhsBuffer.offset, lhsDesc.strides[0],
         // RHS
-        rhsBuffer, rhsDesc.offset, rhsDesc.strides[0],
+        rhsBuffer.baseBuffer, rhsBuffer.offset, rhsDesc.strides[0],
         // Out
-        outBuffer, outDesc.offset, outDesc.strides[0],
+        outBuffer.baseBuffer, outBuffer.offset, outDesc.strides[0],
         // m,n,k
         m, n, k,
         // alpha, beta

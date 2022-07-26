@@ -61,9 +61,12 @@ def VMVX_NonContiguousBuffer : RankedOrUnrankedMemRefOf<
 // An assumed contiguous buffer.
 def VMVX_HasIdentityLayout : CPred<
     [{ $_self.cast<::mlir::MemRefType>().getLayout().isIdentity() }]>;
-def VMVX_Buffer : Type<And<[
-  MemRefRankOf<[I8, I16, I32, I64, F32, F64], [1]>.predicate,
-  VMVX_HasIdentityLayout]>>;
+def VMVX_IdentityMemRef : Type<And<[
+  MemRefOf<[I8, I16, I32, I64, F32, F64]>.predicate,
+  VMVX_HasIdentityLayout]>, "identity memref of primitives">;
+
+
+def VMVX_Buffer : AnyTypeOf<[Util_BufferType]>;
 
 //===----------------------------------------------------------------------===//
 // VMVX op traits

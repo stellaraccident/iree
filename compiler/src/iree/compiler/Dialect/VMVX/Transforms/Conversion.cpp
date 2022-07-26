@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include "iree/compiler/Dialect/HAL/IR/HALDialect.h"
+#include "iree/compiler/Dialect/Util/Conversion/ConversionPatterns.h"
+#include "iree/compiler/Dialect/Util/Conversion/MemRefToUtil/ConvertMemRefToUtil.h"
 #include "iree/compiler/Dialect/Util/IR/UtilDialect.h"
 #include "iree/compiler/Dialect/VM/IR/VMDialect.h"
 #include "iree/compiler/Dialect/VMVX/Conversion/HALToVMVX/ConvertHALToVMVX.h"
@@ -59,7 +61,6 @@ class ConversionPass : public ConversionBase<ConversionPass> {
 
     // Ensure all input dialects go away.
     ConversionTarget conversionTarget(*context);
-    conversionTarget.addIllegalDialect<IREE::HAL::HALDialect>();
     conversionTarget.addIllegalDialect<tensor::TensorDialect>();
     conversionTarget.addLegalDialect<IREE::Util::UtilDialect>();
     conversionTarget.addLegalDialect<IREE::VMVX::VMVXDialect>();
@@ -67,12 +68,22 @@ class ConversionPass : public ConversionBase<ConversionPass> {
         .addLegalDialect<mlir::func::FuncDialect, mlir::scf::SCFDialect,
                          mlir::arith::ArithmeticDialect>();
     conversionTarget.addLegalDialect<mlir::AffineDialect>();
-    conversionTarget.addLegalDialect<memref::MemRefDialect>();
+    // conversionTarget.addLegalDialect<memref::MemRefDialect>();
     conversionTarget.addLegalOp<mlir::UnrealizedConversionCastOp>();
 
     RewritePatternSet patterns(&getContext());
-    populateHALToVMVXPatterns(context, patterns, typeConverter);
-    populateStandardToVMVXPatterns(context, patterns, typeConverter);
+    populateUtilConversionPatterns(context, conversionTarget, typeConverter,
+                                   patterns);
+    populateGenericStructuralConversionPatterns(context, conversionTarget,
+                                                typeConverter, patterns);
+    populateHALToVMVXPatterns(context, conversionTarget, patterns,
+                              typeConverter);
+    populateStandardToVMVXPatterns(context, conversionTarget, patterns,
+                                   typeConverter);
+
+    auto utilBufferType = IREE::Util::BufferType::get(&getContext());
+    populateMemRefToUtilPatterns(context, conversionTarget, typeConverter,
+                                 patterns, utilBufferType);
 
     // Use the default 64-bit lowering for TOSA's ApplyScale operator:
     //   This lowering widens integer types to 64-bit an performs the non-fused

@@ -6,6 +6,7 @@
 
 #include "iree/compiler/Dialect/VMVX/Conversion/HALToVMVX/ConvertHALToVMVX.h"
 
+#include "iree/compiler/Dialect/HAL/IR/HALDialect.h"
 #include "iree/compiler/Dialect/HAL/IR/HALOps.h"
 #include "iree/compiler/Dialect/Util/IR/UtilOps.h"
 #include "iree/compiler/Dialect/Util/IR/UtilTypes.h"
@@ -192,6 +193,25 @@ struct ConvertHALInterfaceConstantLoadOp
   }
 };
 
+// struct ConvertGetBaseBufferFromBindingSubspanOp
+//     : public OpConversionPattern<IREE::VMVX::GetBaseBufferOp> {
+//   using OpConversionPattern::OpConversionPattern;
+//   LogicalResult matchAndRewrite(
+//       IREE::VMVX::GetBaseBufferOp op, OpAdaptor adaptor,
+//       ConversionPatternRewriter &rewriter) const override {
+//     auto bindingOp = adaptor.getOriginalBuffer()
+//                          .getDefiningOp<IREE::HAL::InterfaceBindingSubspanOp>();
+//     if (!bindingOp) {
+//       adaptor.getOriginalBuffer().getDefiningOp()->dump();
+//       return rewriter.notifyMatchFailure(
+//           op, "cannot legalize get_base_buffer op from other than a binding");
+//     }
+
+//     bindingOp.dump();
+//     return failure();
+//   }
+// };
+
 /// Rewrites hal.interface.binding.subspan to ops loading from the ABI structs.
 struct ConvertHALInterfaceBindingSubspanOp
     : public OpConversionPattern<IREE::HAL::InterfaceBindingSubspanOp> {
@@ -213,12 +233,13 @@ struct ConvertHALInterfaceBindingSubspanOp
 
     auto bindingType =
         bindingsArg.getType().cast<IREE::Util::ListType>().getElementType();
-    auto memrefValue = rewriter
+    auto bindingBuffer = rewriter
                            .create<IREE::Util::ListGetOp>(
                                op.getLoc(), bindingType, bindingsArg,
                                rewriter.createOrFold<arith::ConstantIndexOp>(
                                    op.getLoc(), op.getBinding().getZExtValue()))
                            .getResult();
+    
     if (op.getByteOffset() && !matchPattern(op.getByteOffset(), m_Zero())) {
       auto memrefType = op.getResult().getType().cast<MemRefType>();
       Value elementCount;
@@ -239,10 +260,7 @@ struct ConvertHALInterfaceBindingSubspanOp
           ArrayRef<OpFoldResult>{rewriter.getIndexAttr(1)});
     }
     rewriter.replaceOpWithNewOp<UnrealizedConversionCastOp>(
-        op,
-        getTypeConverter()
-            ->convertType(op.getResult().getType())
-            .cast<MemRefType>(),
+        op, getTypeConverter()->convertType(op.getResult().getType()),
         memrefValue);
     return success();
   }
@@ -251,8 +269,10 @@ struct ConvertHALInterfaceBindingSubspanOp
 }  // namespace
 
 void populateHALToVMVXPatterns(MLIRContext *context,
+                               ConversionTarget &conversionTarget,
                                RewritePatternSet &patterns,
                                TypeConverter &typeConverter) {
+  conversionTarget.addIllegalDialect<IREE::HAL::HALDialect>();
   patterns.insert<ConvertHALInterfaceWorkgroupIDOp>(typeConverter, context);
   patterns.insert<ConvertHALInterfaceWorkgroupSizeOp>(typeConverter, context);
   patterns.insert<ConvertHALInterfaceWorkgroupCountOp>(typeConverter, context);

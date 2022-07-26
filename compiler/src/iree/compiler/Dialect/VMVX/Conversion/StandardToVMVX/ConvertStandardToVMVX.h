@@ -15,6 +15,7 @@ namespace iree_compiler {
 
 // Populates conversion patterns from the std dialect to the VMVX dialect.
 void populateStandardToVMVXPatterns(MLIRContext *context,
+                                    ConversionTarget &conversionTarget,
                                     RewritePatternSet &patterns,
                                     TypeConverter &typeConverter);
 

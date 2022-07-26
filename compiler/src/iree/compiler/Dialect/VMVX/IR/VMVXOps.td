@@ -16,6 +16,59 @@ class VMVX_PureOp<string mnemonic, list<Trait> traits = []> :
     VMVX_Op<mnemonic, !listconcat(traits, [NoSideEffect])>;
 
 //===----------------------------------------------------------------------===//
+// Utility Ops
+//===----------------------------------------------------------------------===//
+
+def VMVX_DefBaseBufferOp : VMVX_PureOp<"def_base_buffer"> {
+  let summary = "Defines a base buffer after lowering to the VMVX ABI";
+  let description = [{
+    When lowering from a binding, captures the original buffer and offset
+    for later use.
+  }];
+
+  let arguments = (ins
+    Util_BufferType:$original_buffer,
+    VMVX_Index:$byte_offset
+  );
+  let results = (outs
+    Util_BufferType:$buffer
+  );
+
+  let assemblyFormat = [{
+    $original_buffer `offset` $byte_offset
+    attr-dict
+  }];
+}
+
+def VMVX_ResolveBufferOp : VMVX_PureOp<"resolve_buffer"> {
+  let summary = "Gets a base buffer and adjusted offset of a memref";
+  let description = [{
+    Given a base memref and an element-type sized offset into it, returns
+    a !util.buffer and adjusted offset to the actual backing buffer.
+
+    This is needed to bridge between memrefs and the packed buffers that are
+    passed at the VMVX ABI boundary, where a memref may be backed into an
+    arbitrary slab of memory at a byte offset within that memory (which is
+    aligned).
+  }];
+
+  let arguments = (ins
+    Util_BufferType:$original_buffer,
+    VMVX_Index:$original_offset,
+    VMVX_Index:$element_size
+  );
+  let results = (outs
+    Util_BufferType:$base_buffer,
+    VMVX_Index:$adjusted_offset
+  );
+
+  let assemblyFormat = [{
+    $original_buffer `offset` $original_offset `by` $element_size
+    attr-dict
+  }];
+}
+
+//===----------------------------------------------------------------------===//
 // VMVX Ops: ABI
 //===----------------------------------------------------------------------===//
 
@@ -29,15 +82,15 @@ def VMVX_AddOp : VMVX_Op<"add", [SameVariadicOperandSize]> {
   }];
   let arguments = (ins
     // LHS.
-    VMVX_Buffer:$lhs_buffer,
+    Util_BufferType:$lhs_buffer,
     VMVX_Index:$lhs_offset,
     Variadic<VMVX_Index>:$lhs_strides,
     // RHS.
-    VMVX_Buffer:$rhs_buffer,
+    Util_BufferType:$rhs_buffer,
     VMVX_Index:$rhs_offset,
     Variadic<VMVX_Index>:$rhs_strides,
     // OUT.
-    VMVX_Buffer:$out_buffer,
+    Util_BufferType:$out_buffer,
     VMVX_Index:$out_offset,
     Variadic<VMVX_Index>:$out_strides,
 
@@ -49,9 +102,9 @@ def VMVX_AddOp : VMVX_Op<"add", [SameVariadicOperandSize]> {
   );
 
   let assemblyFormat = [{
-    `lhs` `` `(` $lhs_buffer `offset` $lhs_offset `strides` `[` $lhs_strides `]` `:` type($lhs_buffer) `)`
-    `rhs` `` `(` $rhs_buffer `offset` $rhs_offset `strides` `[` $rhs_strides `]` `:` type($rhs_buffer) `)`
-    `out` `` `(` $out_buffer `offset` $out_offset `strides` `[` $out_strides `]` `:` type($out_buffer) `)`
+    `lhs` `` `(` $lhs_buffer `offset` $lhs_offset `strides` `[` $lhs_strides `]``)`
+    `rhs` `` `(` $rhs_buffer `offset` $rhs_offset `strides` `[` $rhs_strides `]``)`
+    `out` `` `(` $out_buffer `offset` $out_offset `strides` `[` $out_strides `]``)`
     `sizes` `` `(` $sizes `)`
     `:` $element_type
     attr-dict
@@ -62,11 +115,11 @@ def VMVX_CopyOp : VMVX_Op<"copy", [SameVariadicOperandSize]> {
   let summary = "Copy from one buffer to another";
   let arguments = (ins
     // LHS.
-    VMVX_Buffer:$in_buffer,
+    Util_BufferType:$in_buffer,
     VMVX_Index:$in_offset,
     Variadic<VMVX_Index>:$in_strides,
     // OUT.
-    VMVX_Buffer:$out_buffer,
+    Util_BufferType:$out_buffer,
     VMVX_Index:$out_offset,
     Variadic<VMVX_Index>:$out_strides,
 
@@ -77,8 +130,8 @@ def VMVX_CopyOp : VMVX_Op<"copy", [SameVariadicOperandSize]> {
     VMVX_ElementTypeAttr:$element_type
   );
   let assemblyFormat = [{
-    `in` `` `(` $in_buffer `offset` $in_offset `strides` `[` $in_strides `]` `:` type($in_buffer) `)`
-    `out` `` `(` $out_buffer `offset` $out_offset `strides` `[` $out_strides `]` `:` type($out_buffer) `)`
+    `in` `` `(` $in_buffer `offset` $in_offset `strides` `[` $in_strides `]``)`
+    `out` `` `(` $out_buffer `offset` $out_offset `strides` `[` $out_strides `]``)`
     `sizes` `` `(` $sizes `)`
     `:` $element_type
     attr-dict
@@ -92,7 +145,7 @@ def VMVX_Fill2DOp : VMVX_Op<"fill2d"> {
   }];
   let arguments = (ins
     VMVX_ElementType:$scalar,
-    VMVX_Buffer:$out_buffer,
+    Util_BufferType:$out_buffer,
     VMVX_Index:$out_offset,
     VMVX_Index:$out_row_stride,
 
@@ -103,7 +156,7 @@ def VMVX_Fill2DOp : VMVX_Op<"fill2d"> {
 
   let assemblyFormat = [{
     `scalar` `` `(` $scalar `:` type($scalar) `)`
-    `out` `` `(` $out_buffer `offset` $out_offset `row_stride` $out_row_stride `:` type($out_buffer) `)`
+    `out` `` `(` $out_buffer `offset` $out_offset `row_stride` $out_row_stride`)`
     `sizes` `` `(` $m `,` $n `)`
     attr-dict
   }];
@@ -118,15 +171,15 @@ def VMVX_MatmulOp : VMVX_Op<"matmul"> {
   }];
   let arguments = (ins
     // Lhs buffer.
-    VMVX_Buffer:$lhs_buffer,
+    Util_BufferType:$lhs_buffer,
     VMVX_Index:$lhs_offset,
     VMVX_Index:$lhs_row_stride,
     // Rhs buffer.
-    VMVX_Buffer:$rhs_buffer,
+    Util_BufferType:$rhs_buffer,
     VMVX_Index:$rhs_offset,
     VMVX_Index:$rhs_row_stride,
     // Out buffer.
-    VMVX_Buffer:$out_buffer,
+    Util_BufferType:$out_buffer,
     VMVX_Index:$out_offset,
     VMVX_Index:$out_row_stride,
 
@@ -147,9 +200,9 @@ def VMVX_MatmulOp : VMVX_Op<"matmul"> {
   );
 
   let assemblyFormat = [{
-    `lhs` `` `(` $lhs_buffer `offset` $lhs_offset `row_stride` $lhs_row_stride `:` type($lhs_buffer) `)`
-    `rhs` `` `(` $rhs_buffer `offset` $rhs_offset `row_stride` $rhs_row_stride `:` type($rhs_buffer)`)`
-    `out` `` `(` $out_buffer `offset` $out_offset `row_stride` $out_row_stride `:` type($out_buffer) `)`
+    `lhs` `` `(` $lhs_buffer `offset` $lhs_offset `row_stride` $lhs_row_stride `)`
+    `rhs` `` `(` $rhs_buffer `offset` $rhs_offset `row_stride` $rhs_row_stride `)`
+    `out` `` `(` $out_buffer `offset` $out_offset `row_stride` $out_row_stride `)`
     `mnk` `` `(` $m `,` $n `,` $k `)`
     `scale` `` `(` $alpha `:` type($alpha) `,` $beta `:` type($beta) `)`
     `flags` `` `(` $flags `)`
