@@ -44,6 +44,7 @@ iree_compiler_cc_library(
     name = "Transforms",
     srcs = [
         "Conversion.cpp",
+        "ConvertHalEntrypoints.cpp",
         "Passes.cpp",
         "ResolveBufferDescriptors.cpp",
     ],

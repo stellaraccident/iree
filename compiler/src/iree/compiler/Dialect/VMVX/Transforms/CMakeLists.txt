@@ -40,6 +40,7 @@ iree_cc_library(
     "Passes.h"
   SRCS
     "Conversion.cpp"
+    "ConvertHalEntrypoints.cpp"
     "Passes.cpp"
     "ResolveBufferDescriptors.cpp"
   DEPS

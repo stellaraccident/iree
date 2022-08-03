@@ -39,6 +39,10 @@ void buildVMVXTransformPassPipeline(OpPassManager &passManager);
 // Dialect conversion
 //===----------------------------------------------------------------------===//
 
+// Converts entrypoints and HAL ops to discrete arguments and references to
+// them.
+std::unique_ptr<OperationPass<mlir::ModuleOp>> createConvertHalEntrypointsPass();
+
 // Converts from various dialects (HAL, standard, etc) to the VMVX dialect.
 std::unique_ptr<OperationPass<mlir::ModuleOp>> createConversionPass();
 
